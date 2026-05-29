@@ -48,7 +48,7 @@
     "react-dom": "^19.2.5",
     "sharp": "^0.34.5",
     "simple-git": "^3.36.0",
-    "ws": "^8.20.0",
+    "ws": "^8.21.0",
     "zustand": "^5.0.12",
     "express-rate-limit": "^8.3.2"
   },
