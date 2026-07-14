@@ -9,6 +9,7 @@
     "dev": "vite build -c vite.companion.mjs && electron-vite dev --config electron-vite.config.mjs",
     "dev:trace": "vite build -c vite.companion.mjs && NODE_OPTIONS='--trace-warnings' electron-vite dev --config electron-vite.config.mjs",
     "build": "electron-vite build --config electron-vite.config.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "build:backend": "vite build -c vite.backend.config.mjs",
     "build:mac": "npm run build && electron-builder --mac",
     "build:win": "npm run build && electron-builder --win",

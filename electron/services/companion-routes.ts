@@ -2,8 +2,59 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { join, extname, resolve, normalize, relative } from 'path';
 import { existsSync } from 'fs';
+import { timingSafeEqual } from 'crypto';
 import { CompanionAuth } from './companion-server-types';
 import packageJson from '../../package.json';
+
+/** Constant-time string comparison (avoids leaking length/timing on the token). */
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
+let warnedNoAdminToken = false;
+
+/**
+ * Guards the backend-admin surface (status / generate-pin / the Synology page),
+ * which can otherwise hand an anonymous caller the pairing PIN -> a full companion
+ * token -> shell + file access.
+ *
+ *  - If PILOT_ADMIN_TOKEN is set: require it via `x-admin-token` header or `?token=`.
+ *  - If it is NOT set: allow ONLY loopback connections (the NAS host / an SSH tunnel),
+ *    so an un-configured, publicly/proxy-exposed backend is not wide open.
+ */
+function requireAdminToken(req: Request, res: Response, next: NextFunction): void {
+  const expected = (process.env.PILOT_ADMIN_TOKEN || '').trim();
+  if (expected.length > 0) {
+    const provided = (req.get('x-admin-token') || (req.query.token as string) || '').toString().trim();
+    if (provided.length > 0 && safeEqual(provided, expected)) {
+      next();
+      return;
+    }
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  // No token configured -> loopback only. Use the raw socket address, not req.ip
+  // (req.ip can be spoofed via X-Forwarded-For behind a proxy).
+  const remote = (req.socket.remoteAddress || '').replace('::ffff:', '');
+  const isLoopback = remote === '127.0.0.1' || remote === '::1';
+  if (isLoopback) {
+    next();
+    return;
+  }
+  if (!warnedNoAdminToken) {
+    warnedNoAdminToken = true;
+    console.warn(
+      '[companion] backend-admin reached from a non-loopback address with no PILOT_ADMIN_TOKEN set — blocking. ' +
+        'Set PILOT_ADMIN_TOKEN to enable remote admin access.'
+    );
+  }
+  res.status(403).json({
+    error: 'Admin access is restricted to localhost. Set PILOT_ADMIN_TOKEN to enable remote admin.',
+  });
+}
 
 function getAdminStatus(config: {
   port: number;
@@ -29,10 +80,13 @@ function getAdminStatus(config: {
   };
 }
 
-function renderSynologyAdminPage(config: {
-  port: number;
-  protocol: 'http' | 'https';
-}): string {
+function renderSynologyAdminPage(
+  config: {
+    port: number;
+    protocol: 'http' | 'https';
+  },
+  adminToken = ''
+): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -272,9 +326,16 @@ function renderSynologyAdminPage(config: {
         pinStatusEl.textContent = 'PIN expires in ' + secondsRemaining + ' second' + (secondsRemaining === 1 ? '' : 's') + '.';
       }
 
+      const ADMIN_TOKEN = ${JSON.stringify(adminToken)};
+      function adminHeaders(extra) {
+        const h = Object.assign({ Accept: 'application/json' }, extra || {});
+        if (ADMIN_TOKEN) h['x-admin-token'] = ADMIN_TOKEN;
+        return h;
+      }
+
       async function fetchStatus() {
         const response = await fetch('/api/backend-admin/status', {
-          headers: { Accept: 'application/json' },
+          headers: adminHeaders(),
         });
         if (!response.ok) {
           throw new Error('Failed to load backend status');
@@ -289,7 +350,7 @@ function renderSynologyAdminPage(config: {
         try {
           const response = await fetch('/api/backend-admin/generate-pin', {
             method: 'POST',
-            headers: { Accept: 'application/json' },
+            headers: adminHeaders(),
           });
           if (!response.ok) {
             throw new Error('Failed to generate PIN');
@@ -325,6 +386,11 @@ export function setupCompanionRoutes(
     auth: CompanionAuth;
   }
 ): void {
+  // Trust only a loopback reverse proxy (e.g. Caddy on the same host), so
+  // express-rate-limit keys on the real client IP via X-Forwarded-For instead
+  // of lumping every proxied request under the proxy's single IP.
+  app.set('trust proxy', 'loopback');
+
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 300, // max requests per client per window
@@ -381,17 +447,18 @@ export function setupCompanionRoutes(
     });
   });
 
-  app.get('/api/backend-admin/status', (_req: Request, res: Response) => {
+  app.get('/api/backend-admin/status', requireAdminToken, (_req: Request, res: Response) => {
     res.json(getAdminStatus(config));
   });
 
-  app.post('/api/backend-admin/generate-pin', (_req: Request, res: Response) => {
+  app.post('/api/backend-admin/generate-pin', requireAdminToken, (_req: Request, res: Response) => {
     config.auth.generatePIN();
     res.json(getAdminStatus(config));
   });
 
-  app.get('/synology', (_req: Request, res: Response) => {
-    res.type('html').send(renderSynologyAdminPage(config));
+  app.get('/synology', requireAdminToken, (req: Request, res: Response) => {
+    const token = (req.get('x-admin-token') || (req.query.token as string) || '').toString().trim();
+    res.type('html').send(renderSynologyAdminPage(config, token));
   });
 
   // Serve attachment files (images saved by the renderer)
@@ -413,7 +480,7 @@ export function setupCompanionRoutes(
     }
 
     // Only allow image extensions
-    const ext = extname(canonicalPath).toLowerCase();
+    const ext = extname(normalizedPath).toLowerCase();
     const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
     if (!allowedExtensions.includes(ext)) {
     res.status(403).json({ error: 'Forbidden' });
@@ -435,7 +502,7 @@ export function setupCompanionRoutes(
       '.webp': 'image/webp',
     };
     res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-    res.sendFile(canonicalPath);
+    res.sendFile(normalizedPath);
   });
 
   // Serve static files from the React bundle directory
