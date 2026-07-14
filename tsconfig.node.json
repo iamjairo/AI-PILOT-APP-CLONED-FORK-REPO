@@ -15,5 +15,5 @@
     "outDir": "./out",
     "types": ["node"]
   },
-  "include": ["electron/**/*", "shared/**/*", "electron-vite.config.mjs"]
+  "include": ["electron/**/*", "shared/**/*", "electron-vite.config.mjs", "package.json"]
 }

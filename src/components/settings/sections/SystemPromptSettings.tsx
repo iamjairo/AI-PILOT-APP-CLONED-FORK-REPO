@@ -41,7 +41,7 @@ export function SystemPromptSettings() {
   const [draft, setDraft] = useState(systemPrompt);
   const [saved, setSaved] = useState(false);
   const [defaultExpanded, setDefaultExpanded] = useState(false);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Sync draft when store changes externally
   useEffect(() => {

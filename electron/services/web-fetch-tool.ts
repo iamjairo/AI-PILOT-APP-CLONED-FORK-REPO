@@ -1,5 +1,10 @@
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type } from 'typebox';
+import { defineTool, type ToolDefinition, type AgentToolResult } from '@earendil-works/pi-coding-agent';
+
+/** Union of the details shapes returned by the web_fetch tool's success and error branches. */
+type WebFetchDetails =
+  | { status: number; contentType: string; truncated: boolean }
+  | { error: string };
 
 const MAX_OUTPUT_BYTES = 50_000;
 const MAX_OUTPUT_LINES = 2000;
@@ -79,7 +84,7 @@ function truncate(text: string): { output: string; truncated: boolean } {
  * Returns plain text for HTML pages, raw text for other content types.
  */
 export function createWebFetchTool(): ToolDefinition {
-  return {
+  return defineTool({
     name: 'web_fetch',
     label: 'Web Fetch',
     description:
@@ -111,7 +116,7 @@ export function createWebFetchTool(): ToolDefinition {
         Type.String({ description: 'Request body (for POST, PUT, PATCH)' })
       ),
     }),
-    async execute(_toolCallId, params, signal) {
+    async execute(_toolCallId, params, signal): Promise<AgentToolResult<WebFetchDetails>> {
       const { url, method = 'GET', headers = {}, body } = params;
 
       try {
@@ -168,5 +173,5 @@ export function createWebFetchTool(): ToolDefinition {
         };
       }
     },
-  };
+  });
 }

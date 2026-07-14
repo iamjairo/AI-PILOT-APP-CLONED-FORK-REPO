@@ -174,7 +174,7 @@ export function TabBar() {
     },
     ...Array.from({ length: 9 }, (_, i) => ({
       key: String(i + 1),
-      modifiers: ['meta'] as const,
+      modifiers: ['meta' as const],
       action: () => switchToProjectByIndex(i),
     })),
   ]);

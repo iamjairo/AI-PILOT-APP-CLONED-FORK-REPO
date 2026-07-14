@@ -5,7 +5,7 @@
  * operations (list, list all, delete) from the core session lifecycle.
  */
 
-import { SessionManager } from '@mariozechner/pi-coding-agent';
+import { SessionManager } from '@earendil-works/pi-coding-agent';
 import { join } from 'path';
 import { existsSync, readdirSync, unlinkSync } from 'fs';
 import { getPiAgentDir } from './app-settings';

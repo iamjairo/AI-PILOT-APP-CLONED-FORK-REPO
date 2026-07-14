@@ -182,8 +182,8 @@ export class StandaloneBackendRuntime {
     this.companionRemote.onTlsCertChanged = (cert: Buffer, key: Buffer) => {
       if (this.companionServer) {
         if (!originalTlsCert) {
-          originalTlsCert = this.companionServer['config'].tlsCert;
-          originalTlsKey = this.companionServer['config'].tlsKey;
+          originalTlsCert = this.companionServer['config'].tlsCert ?? null;
+          originalTlsKey = this.companionServer['config'].tlsKey ?? null;
         }
         this.companionServer.updateTlsCerts(cert, key);
       }

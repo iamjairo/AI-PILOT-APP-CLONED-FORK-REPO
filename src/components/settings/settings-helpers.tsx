@@ -20,7 +20,7 @@ export function SettingRow({
 }: {
   icon: React.ReactNode;
   label: string;
-  description: string;
+  description: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (

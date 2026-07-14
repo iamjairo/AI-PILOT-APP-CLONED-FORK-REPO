@@ -14,7 +14,7 @@
  */
 
 import { Ollama, type ListResponse, type ModelResponse, type ShowResponse } from 'ollama';
-import type { ModelRegistry } from '@mariozechner/pi-coding-agent';
+import type { ModelRegistry } from '@earendil-works/pi-coding-agent';
 import { loadAppSettings, saveAppSettings, getPiAgentDir } from './app-settings';
 import { broadcastToRenderer } from '../utils/broadcast';
 import { IPC } from '../../shared/ipc';

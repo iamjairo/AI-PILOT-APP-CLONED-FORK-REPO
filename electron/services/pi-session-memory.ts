@@ -6,7 +6,7 @@
  * the result into memory entries.
  */
 
-import type { AuthStorage, ModelRegistry } from '@mariozechner/pi-coding-agent';
+import type { AuthStorage, ModelRegistry } from '@earendil-works/pi-coding-agent';
 import type { MemoryManager } from './memory-manager';
 import { callCheapModel } from './pi-session-helpers';
 

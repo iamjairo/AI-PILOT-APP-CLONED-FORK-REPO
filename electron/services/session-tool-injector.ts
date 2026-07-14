@@ -25,10 +25,10 @@
  * TODO(sdk): Replace with a public session.addTools() / session.removeTools()
  * API when the SDK exposes one. Track: https://github.com/nicepkg/pi-coding-agent/issues/TBD
  *
- * Verified working with @mariozechner/pi-coding-agent 0.55.x – 0.57.x.
+ * Verified working with @earendil-works/pi-coding-agent 0.55.x – 0.57.x.
  */
 
-import type { AgentSession, ToolDefinition } from '@mariozechner/pi-coding-agent';
+import type { AgentSession, ToolDefinition } from '@earendil-works/pi-coding-agent';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ export interface ToolInjectionError {
 
 function getSdkVersion(): string {
   try {
-    return require('@mariozechner/pi-coding-agent/package.json').version;
+    return require('@earendil-works/pi-coding-agent/package.json').version;
   } catch {
     return 'unknown';
   }

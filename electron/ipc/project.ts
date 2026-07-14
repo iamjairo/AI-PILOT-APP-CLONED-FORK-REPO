@@ -115,6 +115,7 @@ export function registerProjectIpc() {
     const results: Array<{ name: string; path: string; relativePath: string; type: 'file' | 'directory' }> = [];
     const q = query.toLowerCase();
     const maxResults = 20;
+    const IGNORED = new Set(loadAppSettings().hiddenPaths ?? DEFAULT_HIDDEN_PATHS);
 
     function searchDir(dirPath: string) {
       if (results.length >= maxResults) return;

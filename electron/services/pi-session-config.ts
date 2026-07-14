@@ -10,7 +10,7 @@ import {
   SettingsManager,
   DefaultResourceLoader,
   type ToolDefinition,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import { createSandboxedTools, type SandboxOptions } from './sandboxed-tools';
 import { loadProjectSettings } from './project-settings';
 import { getPiAgentDir, loadAppSettings } from './app-settings';
@@ -119,7 +119,7 @@ export async function buildSessionConfig(
     noSkills: true,
     additionalExtensionPaths: enabledExtensions.map(e => e.path),
     additionalSkillPaths: enabledSkills.map(s => s.skillMdPath),
-    ...(additionalContext ? { appendSystemPrompt: additionalContext } : {}),
+    ...(additionalContext ? { appendSystemPrompt: [additionalContext] } : {}),
   });
   await resourceLoader.reload();
 

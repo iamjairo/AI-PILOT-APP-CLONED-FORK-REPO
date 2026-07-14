@@ -13,7 +13,7 @@ import type {
   AssistantMessage,
   ToolResultMessage,
   Message,
-} from '@mariozechner/pi-ai';
+} from '@earendil-works/pi-ai';
 import type { SessionExportOptions } from '../../shared/types';
 
 /** A processed message ready for export. */

@@ -13,7 +13,7 @@ import {
   DefaultResourceLoader,
   type AgentSessionEvent,
   type ToolDefinition,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import { extractLastAssistantText } from '../utils/message-utils';
 import { createSandboxedTools, type SandboxOptions } from './sandboxed-tools';
 import { loadProjectSettings } from './project-settings';
@@ -98,7 +98,7 @@ export async function startSubagentSession(
     noSkills: true,
     additionalExtensionPaths: enabledExtensions.map((e) => e.path),
     additionalSkillPaths: enabledSkills.map((s) => s.skillMdPath),
-    appendSystemPrompt: systemPromptParts.join('\n\n'),
+    appendSystemPrompt: systemPromptParts,
   });
   await resourceLoader.reload();
 

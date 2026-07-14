@@ -2,6 +2,7 @@ import { join } from 'path';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { PILOT_APP_DIR, PILOT_WORKSPACE_FILE } from './pilot-paths';
 import type { SavedTabState, SavedUIState, WorkspaceState } from '../../shared/types';
+export type { WorkspaceState } from '../../shared/types';
 
 export class WorkspaceStateService {
   async save(state: WorkspaceState): Promise<void> {

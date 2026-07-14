@@ -507,7 +507,15 @@ export function invoke(channel: string, ...args: unknown[]): Promise<unknown> {
 /**
  * Listen for events from the main process.
  * Returns an unsubscribe function.
+ *
+ * The listener is generic over its argument tuple so that typed handlers
+ * such as `(payload: MyPayload) => void` or `(a: string, b: string) => void`
+ * are assignable without widening to `unknown[]` at every call site.
  */
+export function on<Args extends unknown[] = unknown[]>(
+  channel: string,
+  listener: (...args: Args) => void,
+): () => void;
 export function on(channel: string, listener: (...args: unknown[]) => void): () => void {
   if (_externalBackendMode && !shouldUseLocalElectronTransport(channel, 'on')) {
     if (!companionClient) return () => {};

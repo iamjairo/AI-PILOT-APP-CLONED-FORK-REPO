@@ -147,7 +147,7 @@ export default function DesktopHeader({ projectPath }: DesktopHeaderProps) {
             Tools
           </span>
           {toolsWarning && (
-            <AlertTriangle className="w-3.5 h-3.5 text-warning" title={toolsWarning} />
+            <AlertTriangle className="w-3.5 h-3.5 text-warning" {...{ title: toolsWarning }} />
           )}
         </button>
 

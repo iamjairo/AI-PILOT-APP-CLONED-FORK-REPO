@@ -1129,7 +1129,7 @@ export class DesktopService {
    * IPC handler indefinitely.
    */
   private collectStream(
-    stream: NodeJS.ReadableStream,
+    stream: import('stream').Readable,
     timeoutMs = DesktopService.DEFAULT_EXEC_TIMEOUT_MS,
   ): Promise<{ stdout: string; stderr: string }> {
     return new Promise((resolve, reject) => {

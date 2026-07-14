@@ -279,16 +279,19 @@ export function registerShellIpc() {
   });
 
   ipcMain.handle(IPC.SHELL_CONFIRM_DIALOG, async (event, options: { title?: string; message: string; detail?: string; confirmLabel?: string; cancelLabel?: string }) => {
-    const win = BrowserWindow.fromWebContents(event.sender) ?? undefined;
-    const result = await dialog.showMessageBox(win, {
-      type: 'warning',
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const boxOptions = {
+      type: 'warning' as const,
       title: options.title ?? 'Confirm',
       message: options.message,
       detail: options.detail,
       buttons: [options.cancelLabel ?? 'Cancel', options.confirmLabel ?? 'Confirm'],
       defaultId: 0,
       cancelId: 0,
-    });
+    };
+    const result = win
+      ? await dialog.showMessageBox(win, boxOptions)
+      : await dialog.showMessageBox(boxOptions);
     // button index 1 = confirm
     return result.response === 1;
   });

@@ -15,5 +15,5 @@
     "outDir": "./out",
     "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/**/*", "shared/**/*"]
+  "include": ["src/**/*", "shared/**/*", "package.json"]
 }

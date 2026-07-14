@@ -59,7 +59,7 @@ export default function ZipImporter({ type, scope }: ZipImporterProps) {
       setImportResult({
         success: false,
         id: '',
-        name: zipFile.name,
+        name: importFile.name,
         type,
         scope,
         error: error instanceof Error ? error.message : 'Unknown error',

@@ -1,4 +1,4 @@
-import type { AgentSessionEvent } from '@mariozechner/pi-coding-agent';
+import type { AgentSessionEvent } from '@earendil-works/pi-coding-agent';
 import { randomUUID } from 'crypto';
 import { broadcastToRenderer } from '../utils/broadcast';
 import { IPC } from '../../shared/ipc';

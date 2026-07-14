@@ -8,8 +8,8 @@
  * The project directory is bind-mounted at /workspace inside the container.
  * All commands execute with /workspace as the working directory.
  */
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type } from 'typebox';
+import { defineTool, type ToolDefinition } from '@earendil-works/pi-coding-agent';
 import type { DesktopService } from './desktop-service';
 
 /** Maximum wait time for desktop_wait tool (seconds) */
@@ -41,7 +41,7 @@ export function createDesktopTools(
   return [
     // ── Mouse tools ─────────────────────────────────────────────────
 
-    {
+    defineTool({
       name: 'desktop_click',
       label: 'Desktop Click',
       description: 'Left-click at screen coordinates (x, y) in the desktop virtual display.',
@@ -53,9 +53,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y), 'click', '1']);
         return textResult(`Clicked at (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_double_click',
       label: 'Desktop Double Click',
       description: 'Double-click at screen coordinates (x, y) in the desktop virtual display.',
@@ -67,9 +67,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y), 'click', '--repeat', '2', '1']);
         return textResult(`Double-clicked at (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_right_click',
       label: 'Desktop Right Click',
       description: 'Right-click at screen coordinates (x, y) in the desktop virtual display.',
@@ -81,9 +81,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y), 'click', '3']);
         return textResult(`Right-clicked at (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_middle_click',
       label: 'Desktop Middle Click',
       description: 'Middle-click at screen coordinates (x, y) in the desktop virtual display.',
@@ -95,9 +95,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y), 'click', '2']);
         return textResult(`Middle-clicked at (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_hover',
       label: 'Desktop Hover',
       description: 'Move the mouse cursor to screen coordinates (x, y) without clicking.',
@@ -109,9 +109,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y)]);
         return textResult(`Moved cursor to (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_drag',
       label: 'Desktop Drag',
       description: 'Click-and-drag from (startX, startY) to (endX, endY) in the desktop virtual display.',
@@ -125,9 +125,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.startX), String(params.startY), 'mousedown', '1', 'mousemove', '--sync', String(params.endX), String(params.endY), 'mouseup', '1']);
         return textResult(`Dragged from (${params.startX}, ${params.startY}) to (${params.endX}, ${params.endY})`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_scroll',
       label: 'Desktop Scroll',
       description: 'Scroll at screen coordinates (x, y). Direction: "up", "down", "left", "right". Amount is number of scroll increments.',
@@ -150,11 +150,11 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'mousemove', '--sync', String(params.x), String(params.y), 'click', '--repeat', String(amount), String(button)]);
         return textResult(`Scrolled ${params.direction} ${amount}x at (${params.x}, ${params.y})`);
       },
-    },
+    }),
 
     // ── Keyboard tools ──────────────────────────────────────────────
 
-    {
+    defineTool({
       name: 'desktop_type',
       label: 'Desktop Type',
       description: 'Type text string into the focused window in the desktop. For special keys, use desktop_key instead.',
@@ -165,9 +165,9 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'type', '--', params.text]);
         return textResult(`Typed ${params.text.length} character(s)`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_key',
       label: 'Desktop Key',
       description: 'Press a key or key combination in the desktop. Examples: "Return", "ctrl+c", "alt+Tab", "ctrl+shift+t", "Escape", "BackSpace", "Delete", "space".',
@@ -182,11 +182,11 @@ export function createDesktopTools(
         await execCmd(['xdotool', 'key', params.keys]);
         return textResult(`Pressed ${params.keys}`);
       },
-    },
+    }),
 
     // ── Screen tools ────────────────────────────────────────────────
 
-    {
+    defineTool({
       name: 'desktop_screenshot',
       label: 'Desktop Screenshot',
       description: 'Take a screenshot of the desktop virtual display (1920×1080). Returns a PNG image with a coordinate grid overlay showing pixel coordinates, helping you determine precise click/drag positions. The grid coordinates match the coordinate system used by desktop_click, desktop_drag, and other mouse tools.',
@@ -210,11 +210,11 @@ export function createDesktopTools(
           details: {},
         };
       },
-    },
+    }),
 
     // ── Clipboard tools ─────────────────────────────────────────────
 
-    {
+    defineTool({
       name: 'desktop_clipboard_get',
       label: 'Desktop Clipboard Get',
       description: 'Read the current clipboard contents in the desktop.',
@@ -223,9 +223,9 @@ export function createDesktopTools(
         const text = await exec('xclip -selection clipboard -o 2>/dev/null || echo ""');
         return textResult(text || '(clipboard is empty)');
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_clipboard_set',
       label: 'Desktop Clipboard Set',
       description: 'Set the clipboard contents in the desktop.',
@@ -240,11 +240,11 @@ export function createDesktopTools(
         );
         return textResult('Clipboard updated');
       },
-    },
+    }),
 
     // ── Lifecycle tools ─────────────────────────────────────────────
 
-    {
+    defineTool({
       name: 'desktop_start',
       label: 'Desktop Start',
       description: 'Start the desktop virtual display for this project. Must be called before using other desktop tools. Returns connection info.',
@@ -264,9 +264,9 @@ export function createDesktopTools(
           throw err;
         }
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_stop',
       label: 'Desktop Stop',
       description: 'Stop the desktop virtual display for this project.',
@@ -275,9 +275,9 @@ export function createDesktopTools(
         await service.stopDesktop(projectPath);
         return textResult('Desktop stopped');
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_wait',
       label: 'Desktop Wait',
       description: `Wait for a specified number of seconds (max ${MAX_WAIT_SECONDS}). Useful to let animations, page loads, or other async operations complete before taking a screenshot.`,
@@ -289,9 +289,9 @@ export function createDesktopTools(
         await execCmd(['sleep', String(seconds)]);
         return textResult(`Waited ${seconds}s`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_open_browser',
       label: 'Desktop Open Browser',
       description: 'Open a URL in a browser inside the desktop (1920×1080). Launches Chromium by default. The browser opens maximised — use desktop_screenshot to see the page.',
@@ -328,9 +328,9 @@ export function createDesktopTools(
 
         return textResult(`Opened ${params.url} in ${browser}. Use desktop_screenshot to see the page.`);
       },
-    },
+    }),
 
-    {
+    defineTool({
       name: 'desktop_exec',
       label: 'Desktop Exec',
       description: 'Run an arbitrary shell command inside the desktop container. The project directory is mounted read-only at /workspace (the default working directory). Returns stdout and stderr. Use for installing packages, running scripts, launching applications, viewing files, etc. To modify project files, use the regular file editing tools in Pilot — they go through diff review. Commands that do not complete within 120 seconds are terminated on the host side, but the process may keep running inside the container. For long-running commands, use `nohup <cmd> > /tmp/output.log 2>&1 &` and check the log file afterwards.',
@@ -341,6 +341,6 @@ export function createDesktopTools(
         const output = await exec(params.command);
         return textResult(output || '(no output)');
       },
-    },
+    }),
   ];
 }

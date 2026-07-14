@@ -140,6 +140,31 @@ export function registerAuthIpc(sessionManager: PilotSessionManager) {
         onProgress: (message) => {
           sendEvent('progress', { message });
         },
+        // Device-code flow (v0.80): surface the user code + verification URL so the
+        // user can complete authentication out-of-band. Open the verification page
+        // and forward the details to the renderer.
+        onDeviceCode: (info) => {
+          if (info.verificationUri) shell.openExternal(info.verificationUri);
+          sendEvent('device_code', {
+            userCode: info.userCode,
+            verificationUri: info.verificationUri,
+            intervalSeconds: info.intervalSeconds,
+            expiresInSeconds: info.expiresInSeconds,
+            instructions: `Enter code ${info.userCode} at ${info.verificationUri} to finish signing in.`,
+          });
+        },
+        // Selection flow (v0.80): the SDK asks the caller to choose among options
+        // (e.g. account/org). No interactive selector is wired yet, so default to
+        // the first option and surface the choice to the renderer.
+        onSelect: async (prompt) => {
+          const choice = prompt.options[0]?.id;
+          sendEvent('select', {
+            message: prompt.message,
+            options: prompt.options,
+            selected: choice,
+          });
+          return choice;
+        },
       });
 
       sendEvent('success', {});

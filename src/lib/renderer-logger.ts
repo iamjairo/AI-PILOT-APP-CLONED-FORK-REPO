@@ -19,7 +19,7 @@ export interface Logger {
 
 function send(source: string, level: string, msg: string, data?: unknown): void {
   try {
-    if (typeof window !== 'undefined' && window.api?.invoke) {
+    if (typeof window !== 'undefined' && window.api) {
       invoke(IPC.LOG_MESSAGE, source, level, msg, data).catch(() => {
         (console as any)[level]?.(`[${source}] ${msg}`, data ?? '');
       });

@@ -6,8 +6,9 @@ import {
   createGrepTool,
   createFindTool,
   createLsTool,
-} from '@mariozechner/pi-coding-agent';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+  defineTool,
+} from '@earendil-works/pi-coding-agent';
+import type { ToolDefinition } from '@earendil-works/pi-coding-agent';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, isAbsolute } from 'path';
 import { randomUUID } from 'crypto';
@@ -65,7 +66,7 @@ export function createSandboxedTools(
   const realBash = createBashTool(cwd);
 
   // Create sandboxed edit tool
-  const sandboxedEdit: ToolDefinition = {
+  const sandboxedEdit = defineTool({
     name: realEdit.name,
     label: realEdit.label,
     description: realEdit.description,
@@ -128,10 +129,10 @@ export function createSandboxedTools(
         details: { diff: unifiedDiff },
       };
     },
-  } as ToolDefinition;
+  });
 
   // Create sandboxed write tool
-  const sandboxedWrite: ToolDefinition = {
+  const sandboxedWrite = defineTool({
     name: realWrite.name,
     label: realWrite.label,
     description: realWrite.description,
@@ -185,10 +186,10 @@ export function createSandboxedTools(
         details: { diff: unifiedDiff },
       };
     },
-  } as ToolDefinition;
+  });
 
   // Bash tool: jail blocks escaping paths, otherwise normal yolo/staging flow
-  const sandboxedBash: ToolDefinition = {
+  const sandboxedBash = defineTool({
     name: realBash.name,
     label: realBash.label,
     description: realBash.description,
@@ -260,7 +261,7 @@ export function createSandboxedTools(
 
       return realBash.execute(toolCallId, params, signal, onUpdate);
     },
-  } as ToolDefinition;
+  });
 
   // Read-only tools — apply jail checks when enabled
   const realRead = createReadTool(cwd);
@@ -274,7 +275,7 @@ export function createSandboxedTools(
     return `Error: Path "${filePath}" is outside the project directory. Operation blocked by jail.`;
   }
 
-  const sandboxedRead: ToolDefinition = {
+  const sandboxedRead = defineTool({
     name: realRead.name,
     label: realRead.label,
     description: realRead.description,
@@ -285,9 +286,9 @@ export function createSandboxedTools(
       if (err) return { content: [{ type: 'text', text: err }], details: {} };
       return realRead.execute(toolCallId, params, signal, onUpdate);
     },
-  } as ToolDefinition;
+  });
 
-  const sandboxedGrep: ToolDefinition = {
+  const sandboxedGrep = defineTool({
     name: realGrep.name,
     label: realGrep.label,
     description: realGrep.description,
@@ -300,9 +301,9 @@ export function createSandboxedTools(
       }
       return realGrep.execute(toolCallId, params, signal, onUpdate);
     },
-  } as ToolDefinition;
+  });
 
-  const sandboxedFind: ToolDefinition = {
+  const sandboxedFind = defineTool({
     name: realFind.name,
     label: realFind.label,
     description: realFind.description,
@@ -315,9 +316,9 @@ export function createSandboxedTools(
       }
       return realFind.execute(toolCallId, params, signal, onUpdate);
     },
-  } as ToolDefinition;
+  });
 
-  const sandboxedLs: ToolDefinition = {
+  const sandboxedLs = defineTool({
     name: realLs.name,
     label: realLs.label,
     description: realLs.description,
@@ -330,7 +331,7 @@ export function createSandboxedTools(
       }
       return realLs.execute(toolCallId, params, signal, onUpdate);
     },
-  } as ToolDefinition;
+  });
 
   const readOnlyToolDefs: ToolDefinition[] = [
     sandboxedRead,

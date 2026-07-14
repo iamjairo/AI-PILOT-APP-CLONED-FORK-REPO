@@ -132,7 +132,7 @@ export function getLogger(source: string): Logger {
 // ─── Internal ────────────────────────────────────────────────────────────
 
 function buildConfig(s: PilotAppSettings): Config {
-  const l = s.logging ?? {};
+  const l: NonNullable<PilotAppSettings['logging']> = s.logging ?? ({} as NonNullable<PilotAppSettings['logging']>);
   // In dev mode (electron-vite), force debug level unless user explicitly set something else
   const isDev = !!process.env.ELECTRON_RENDERER_URL;
   const effectiveLevel = isDev ? (l.level === 'warn' || !l.level ? 'debug' : l.level) : (l.level ?? 'warn');

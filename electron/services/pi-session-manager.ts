@@ -6,8 +6,8 @@ import {
   createEventBus,
   type AgentSession,
   type AgentSessionEvent,
-} from '@mariozechner/pi-coding-agent';
-import type { TextContent, ThinkingContent } from '@mariozechner/pi-ai';
+} from '@earendil-works/pi-coding-agent';
+import type { TextContent, ThinkingContent } from '@earendil-works/pi-ai';
 import { extractLastAssistantText } from '../utils/message-utils';
 import { StagedDiffManager } from './staged-diffs';
 import { getPiAgentDir, loadAppSettings } from './app-settings';
@@ -59,7 +59,8 @@ export class PilotSessionManager {
     ensurePilotAppDirs();
     // Auth & models stored in Pilot app dir (~/.config/pilot/)
     this.authStorage = AuthStorage.create(PILOT_AUTH_FILE);
-    this.modelRegistry = new ModelRegistry(this.authStorage, PILOT_MODELS_FILE);
+    // ModelRegistry's constructor is now private (v0.80); use the static factory.
+    this.modelRegistry = ModelRegistry.create(this.authStorage, PILOT_MODELS_FILE);
     this.subagentManager = new SubagentManager(this);
 
     // Wire up task board change notifications to renderer
@@ -264,7 +265,10 @@ export class PilotSessionManager {
           });
         }
         // Clear the streaming state so the user can try again
-        this.forwardEventToRenderer(tabId, { type: 'turn_end' });
+        // 'turn_end' now carries a required { message, toolResults } payload and is
+        // no longer a valid bare signal. Use 'agent_settled' (the new no-payload
+        // "agent is idle" AgentSessionEvent) to reset the renderer's streaming state.
+        this.forwardEventToRenderer(tabId, { type: 'agent_settled' });
 
         // Suppress unhandled rejection from the still-running promptPromise
         promptPromise.catch(() => {});
@@ -309,7 +313,10 @@ export class PilotSessionManager {
           tabId,
           event: { type: 'system_message', content: `❌ ${hint}` },
         });
-        this.forwardEventToRenderer(tabId, { type: 'turn_end' });
+        // 'turn_end' now carries a required { message, toolResults } payload and is
+        // no longer a valid bare signal. Use 'agent_settled' (the new no-payload
+        // "agent is idle" AgentSessionEvent) to reset the renderer's streaming state.
+        this.forwardEventToRenderer(tabId, { type: 'agent_settled' });
         return false;
       }
       return true;
@@ -323,7 +330,7 @@ export class PilotSessionManager {
     tabId: string,
     message: string,
     projectPath: string
-  ): { action: 'show_panel' | 'show_create' | 'show_ready'; readyText?: string } | null {
+  ): Promise<{ action: 'show_panel' | 'show_create' | 'show_ready'; readyText?: string } | null> {
     return handlePossibleTaskCommand(message, projectPath, this.taskManager);
   }
 
@@ -360,7 +367,11 @@ export class PilotSessionManager {
   async fork(tabId: string, entryId: string) {
     const session = this.sessions.get(tabId);
     if (!session) throw new Error(`No session for tab ${tabId}`);
-    return session.fork(entryId);
+    // AgentSession.fork() was removed in v0.80 and replaced by navigateTree(),
+    // which branches within the same session file and returns { editorText?, cancelled }.
+    // Map editorText -> selectedText to preserve the existing IPC/renderer contract.
+    const result = await session.navigateTree(entryId);
+    return { selectedText: result.editorText, cancelled: result.cancelled };
   }
 
   /** Get user messages with their entry IDs for forking / regeneration. */

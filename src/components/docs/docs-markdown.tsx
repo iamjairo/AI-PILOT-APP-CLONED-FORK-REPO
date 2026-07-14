@@ -138,7 +138,7 @@ function DocBlock({ block, currentPage }: { block: DocBlockType; currentPage: st
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
-      const Tag = `h${block.level}` as keyof JSX.IntrinsicElements;
+      const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
       const sizes: Record<number, string> = {
         1: 'text-2xl font-bold mt-0 mb-4',
         2: 'text-xl font-bold mt-8 mb-3',

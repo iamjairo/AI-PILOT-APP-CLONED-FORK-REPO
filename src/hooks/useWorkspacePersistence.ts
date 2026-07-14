@@ -7,7 +7,7 @@ import { useChatStore } from '../stores/chat-store';
 import { useSessionStore } from '../stores/session-store';
 import { invoke } from '../lib/ipc-client';
 import { IPC } from '../../shared/ipc';
-import type { WorkspaceState, SavedTabState } from '../../shared/types';
+import type { WorkspaceState, SavedTabState, SavedUIState } from '../../shared/types';
 
 /**
  * Tiny store to track which sessions have been fully wired up (session opened,
@@ -32,7 +32,9 @@ export const useWiredSessionsStore = create<WiredSessionsStore>((set) => ({
 function serializeTab(tab: TabState): SavedTabState {
   return {
     id: tab.id,
-    type: tab.type,
+    // In-memory tabs support more `type` values than the persisted schema;
+    // narrow to the SavedTabState union at the persistence boundary.
+    type: tab.type as SavedTabState['type'],
     filePath: tab.filePath,
     title: tab.title,
     projectPath: tab.projectPath,
@@ -54,7 +56,7 @@ function collectWorkspaceState(): WorkspaceState {
     ui: {
       sidebarVisible: uiStore.sidebarVisible,
       contextPanelVisible: uiStore.contextPanelVisible,
-      contextPanelTab: uiStore.contextPanelTab,
+      contextPanelTab: uiStore.contextPanelTab as SavedUIState['contextPanelTab'],
       focusMode: uiStore.focusMode,
       sidebarWidth: uiStore.sidebarWidth,
       contextPanelWidth: uiStore.contextPanelWidth,
@@ -184,11 +186,11 @@ export function useWorkspacePersistence() {
         order: t.order,
         scrollPosition: 0,
         inputDraft: t.inputDraft || '',
-        panelConfig: t.panelConfig ?? {
+        panelConfig: (t.panelConfig ?? {
           sidebarVisible: true,
           contextPanelVisible: true,
           contextPanelTab: 'files' as const,
-        },
+        }) as TabState['panelConfig'],
         lastActiveAt: Date.now(),
         hasUnread: false,
       }));

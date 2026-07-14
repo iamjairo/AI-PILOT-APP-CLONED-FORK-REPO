@@ -24,7 +24,7 @@ export function registerAgentIpc(sessionManager: PilotSessionManager) {
   ipcMain.handle(IPC.AGENT_PROMPT, async (_event, tabId: string, text: string, projectPath?: string, _images?: unknown, sessionPath?: string | null) => {
     // Check for task commands BEFORE memory and agent
     if (projectPath) {
-      const taskResult = sessionManager.handlePossibleTaskCommand(tabId, text, projectPath);
+      const taskResult = await sessionManager.handlePossibleTaskCommand(tabId, text, projectPath);
       if (taskResult) {
         let eventChannel: string | null = null;
         let eventPayload: Record<string, unknown> | null = null;

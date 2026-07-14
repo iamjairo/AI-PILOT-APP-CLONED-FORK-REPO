@@ -45,8 +45,13 @@ function generateCert(configDir: string): { cert: Buffer; key: Buffer } {
   cert.setSubject(attrs);
   cert.setIssuer(attrs);
 
-  // Build Subject Alternative Names
-  const altNames: forge.pki.CertificateField[] = [
+  // Build Subject Alternative Names.
+  // node-forge's subjectAltName altNames use a numeric GeneralName `type`
+  // (2 = dNSName with `value`, 7 = iPAddress with `ip`); @types/node-forge's
+  // `CertificateField` models attribute fields, not altNames, so we type the
+  // altName shape structurally here. Runtime values are unchanged.
+  type SubjectAltName = { type: number; value?: string; ip?: string };
+  const altNames: SubjectAltName[] = [
     { type: 2, value: 'localhost' }, // DNS
     { type: 7, ip: '127.0.0.1' },   // IP
     { type: 7, ip: '0.0.0.0' },     // IP

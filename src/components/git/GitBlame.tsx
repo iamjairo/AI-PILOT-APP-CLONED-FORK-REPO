@@ -16,7 +16,7 @@ export default function GitBlame() {
   };
 
   // Group consecutive lines by commit for visual grouping
-  const getCommitColor = (hash: string, index: number) => {
+  const getCommitColor = (hash: string, index: number): string => {
     const prevHash = index > 0 ? blameLines[index - 1]?.commitHash : null;
     if (hash !== prevHash) {
       // Alternate between two backgrounds

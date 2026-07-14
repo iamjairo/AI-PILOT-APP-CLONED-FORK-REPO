@@ -1,5 +1,5 @@
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type } from 'typebox';
+import { defineTool, type ToolDefinition } from '@earendil-works/pi-coding-agent';
 import type { MemoryManager } from './memory-manager';
 
 /** Wrap a plain string in the AgentToolResult format the SDK expects. */
@@ -85,7 +85,7 @@ export function createMemoryTools(
 
   // ─── pilot_memory_read ───────────────────────────────────────────────
 
-  const memoryRead: ToolDefinition = {
+  const memoryRead = defineTool({
     name: 'pilot_memory_read',
     label: 'Memory',
     description: `Read stored memories from global and/or project-specific MEMORY.md files.
@@ -118,11 +118,11 @@ export function createMemoryTools(
 
       return textResult(sections.length > 0 ? sections.join('\n\n') : 'No memories stored.');
     },
-  };
+  });
 
   // ─── pilot_memory_add ────────────────────────────────────────────────
 
-  const memoryAdd: ToolDefinition = {
+  const memoryAdd = defineTool({
     name: 'pilot_memory_add',
     label: 'Memory',
     description: `Save a memory entry to persist knowledge across sessions.
@@ -165,11 +165,11 @@ export function createMemoryTools(
       await memoryManager.appendMemory(params.text, scope, projectPath, category);
       return textResult(`Saved to ${scope} memory under "${category}": ${params.text}`);
     },
-  };
+  });
 
   // ─── pilot_memory_remove ─────────────────────────────────────────────
 
-  const memoryRemove: ToolDefinition = {
+  const memoryRemove = defineTool({
     name: 'pilot_memory_remove',
     label: 'Memory',
     description: `Remove a memory entry by matching its text.
@@ -191,11 +191,11 @@ export function createMemoryTools(
         ? `Removed: "${removed}"`
         : `No memory found matching: ${params.text}`);
     },
-  };
+  });
 
   // ─── pilot_memory_search ─────────────────────────────────────────────
 
-  const memorySearch: ToolDefinition = {
+  const memorySearch = defineTool({
     name: 'pilot_memory_search',
     label: 'Memory',
     description: `Search memories by keyword or phrase, returning only matching entries rather than the full memory file contents.
@@ -229,7 +229,7 @@ export function createMemoryTools(
       const lines = results.map(r => `[${r.scope}/${r.category}] ${r.text}`);
       return textResult(`Found ${results.length} matching ${results.length === 1 ? 'memory' : 'memories'}:\n\n${lines.join('\n')}`);
     },
-  };
+  });
 
   return [memoryRead, memoryAdd, memoryRemove, memorySearch];
 }

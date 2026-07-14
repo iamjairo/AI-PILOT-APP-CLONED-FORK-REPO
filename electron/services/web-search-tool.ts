@@ -5,9 +5,14 @@
  * Results include numbered references for citation support.
  */
 
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
-import { searchWeb, formatSearchResults } from './web-search';
+import { Type } from 'typebox';
+import { defineTool, type ToolDefinition, type AgentToolResult } from '@earendil-works/pi-coding-agent';
+import { searchWeb, formatSearchResults, type SearchResult } from './web-search';
+
+/** Union of the details shapes returned by the web_search tool's success and error branches. */
+type WebSearchDetails =
+  | { query: string; resultCount: number; results: SearchResult[] }
+  | { error: string };
 
 /**
  * Create the web_search tool.
@@ -15,7 +20,7 @@ import { searchWeb, formatSearchResults } from './web-search';
  * @param getApiKey — function to dynamically resolve the API key (reads from settings)
  */
 export function createWebSearchTool(getApiKey: () => string | undefined): ToolDefinition {
-  return {
+  return defineTool({
     name: 'web_search',
     label: 'Web Search',
     description:
@@ -36,7 +41,7 @@ export function createWebSearchTool(getApiKey: () => string | undefined): ToolDe
         })
       ),
     }),
-    async execute(_toolCallId, params, signal) {
+    async execute(_toolCallId, params, signal): Promise<AgentToolResult<WebSearchDetails>> {
       const apiKey = getApiKey();
       if (!apiKey) {
         return {
@@ -71,5 +76,5 @@ export function createWebSearchTool(getApiKey: () => string | undefined): ToolDe
         };
       }
     },
-  };
+  });
 }

@@ -7,7 +7,7 @@
  * - Slash command listing (prompt templates, skills, extensions)
  */
 
-import type { AgentSession } from '@mariozechner/pi-coding-agent';
+import type { AgentSession } from '@earendil-works/pi-coding-agent';
 import type { MemoryCommandResult } from '../../shared/types';
 import type { MemoryManager } from './memory-manager';
 import type { TaskManager } from './task-manager';
@@ -16,11 +16,11 @@ import type { TaskManager } from './task-manager';
  * Handle /tasks slash commands.
  * Returns a result if it was a task command, or null if not intercepted.
  */
-export function handlePossibleTaskCommand(
+export async function handlePossibleTaskCommand(
   message: string,
   projectPath: string,
   taskManager: TaskManager
-): { action: 'show_panel' | 'show_create' | 'show_ready'; readyText?: string } | null {
+): Promise<{ action: 'show_panel' | 'show_create' | 'show_ready'; readyText?: string } | null> {
   const trimmed = message.trim().toLowerCase();
 
   if (trimmed === '/tasks' || trimmed === '/tasks board') {
@@ -32,7 +32,7 @@ export function handlePossibleTaskCommand(
   }
 
   if (trimmed === '/tasks ready') {
-    const ready = taskManager.getReadyTasks(projectPath);
+    const ready = await taskManager.getReadyTasks(projectPath);
     if (ready.length === 0) {
       return { action: 'show_ready', readyText: '📋 No ready tasks. All tasks are either blocked, in progress, or done.' };
     }
@@ -97,7 +97,7 @@ export function getSlashCommands(
     for (const t of templates) {
       commands.push({
         name: t.name,
-        description: t.description || `Prompt template (${t.source})`,
+        description: t.description || `Prompt template (${t.sourceInfo.source})`,
         source: 'prompt',
       });
     }
@@ -109,7 +109,7 @@ export function getSlashCommands(
     for (const s of skills) {
       commands.push({
         name: `skill:${s.name}`,
-        description: s.description || `Skill (${s.source})`,
+        description: s.description || `Skill (${s.sourceInfo.source})`,
         source: 'skill',
       });
     }

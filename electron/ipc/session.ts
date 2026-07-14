@@ -7,8 +7,8 @@ import type { PilotSessionManager } from '../services/pi-session-manager';
 import { updateSessionMeta, removeSessionMeta } from '../services/session-metadata';
 import type { SessionMeta } from '../services/session-metadata';
 import type { SessionExportOptions, SessionExportResult } from '../../shared/types';
-import type { Message } from '@mariozechner/pi-ai';
-import { parseSessionEntries, buildSessionContext } from '@mariozechner/pi-coding-agent';
+import type { Message } from '@earendil-works/pi-ai';
+import { parseSessionEntries, buildSessionContext, type SessionEntry } from '@earendil-works/pi-coding-agent';
 import { formatAsMarkdown, formatAsJson } from '../services/session-export';
 import { getPiAgentDir } from '../services/app-settings';
 import { isWithinDir } from '../utils/paths';
@@ -124,7 +124,10 @@ export function registerSessionIpc(sessionManager: PilotSessionManager) {
     if (entries.length === 0) {
       throw new Error('No messages to export — the session is empty.');
     }
-    const context = buildSessionContext(entries);
+    // parseSessionEntries returns FileEntry[] (SessionHeader | SessionEntry); the leading
+    // SessionHeader (type: 'session') is not a context entry, so drop it to get SessionEntry[].
+    const sessionEntries = entries.filter((e) => e.type !== 'session') as SessionEntry[];
+    const context = buildSessionContext(sessionEntries);
     const messages = (context.messages ?? []) as Message[];
     if (messages.length === 0) {
       throw new Error('No messages to export — the session is empty.');

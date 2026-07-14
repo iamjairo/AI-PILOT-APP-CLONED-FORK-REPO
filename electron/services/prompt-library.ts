@@ -11,6 +11,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import chokidar from 'chokidar';
+import type { FSWatcher } from 'chokidar';
 import { PILOT_PROMPTS_DIR } from './pilot-paths';
 import { CommandRegistry } from './command-registry';
 import { getLogger } from './logger';
@@ -46,8 +47,8 @@ export class PromptLibrary {
   private filePaths = new Map<string, string>(); // id → file path
   private projectPath: string | null = null;
   private listeners = new Set<ChangeCallback>();
-  private globalWatcher: chokidar.FSWatcher | null = null;
-  private projectWatcher: chokidar.FSWatcher | null = null;
+  private globalWatcher: FSWatcher | null = null;
+  private projectWatcher: FSWatcher | null = null;
   private reloadTimer: ReturnType<typeof setTimeout> | null = null;
   private registryUnsub: (() => void) | null = null;
   private seeded = false;

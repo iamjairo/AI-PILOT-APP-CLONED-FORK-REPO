@@ -1,5 +1,5 @@
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type } from 'typebox';
+import { defineTool, type ToolDefinition } from '@earendil-works/pi-coding-agent';
 import { IPC } from '../../shared/ipc';
 import { broadcastToRenderer } from '../utils/broadcast';
 import type { EditorOpenFilePayload, EditorOpenUrlPayload, WebTabOpenPayload } from '../../shared/types';
@@ -12,7 +12,7 @@ export function createEditorTools(projectPath: string): ToolDefinition[] {
 
   // ─── pilot_show_file ─────────────────────────────────────────────────
 
-  const showFile: ToolDefinition = {
+  const showFile = defineTool({
     name: 'pilot_show_file',
     label: 'Editor',
     description:
@@ -39,11 +39,11 @@ export function createEditorTools(projectPath: string): ToolDefinition[] {
         : '';
       return { content: [{ type: 'text' as const, text: `Opened ${params.path}${lineInfo} in the editor.` }], details: {} };
     },
-  };
+  });
 
   // ─── pilot_open_url ──────────────────────────────────────────────────
 
-  const openUrl: ToolDefinition = {
+  const openUrl = defineTool({
     name: 'pilot_open_url',
     label: 'Browser',
     description:
@@ -61,11 +61,11 @@ export function createEditorTools(projectPath: string): ToolDefinition[] {
       broadcastToRenderer(IPC.EDITOR_OPEN_URL, payload);
       return { content: [{ type: 'text' as const, text: `Asked user to open: ${params.url}` }], details: {} };
     },
-  };
+  });
 
   // ─── pilot_web ─────────────────────────────────────────────────────
 
-  const webTab: ToolDefinition = {
+  const webTab = defineTool({
     name: 'pilot_web',
     label: 'Web Tab',
     description:
@@ -93,7 +93,7 @@ export function createEditorTools(projectPath: string): ToolDefinition[] {
       broadcastToRenderer(IPC.WEB_TAB_OPEN, payload);
       return { content: [{ type: 'text' as const, text: `Opened ${params.url} in a web tab.` }], details: {} };
     },
-  };
+  });
 
   return [showFile, openUrl, webTab];
 }

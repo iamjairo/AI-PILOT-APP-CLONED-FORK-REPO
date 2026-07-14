@@ -14,7 +14,7 @@ import ChatHeader from './ChatHeader';
 import SuggestionChips from './SuggestionChips';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
 
-const EMPTY_SUGGESTIONS: string[] = [];
+const EMPTY_SUGGESTIONS: Array<{ text: string; label: string }> = [];
 
 export default function ChatView() {
   const activeTabId = useTabStore(s => s.activeTabId);

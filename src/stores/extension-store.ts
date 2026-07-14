@@ -88,7 +88,7 @@ export const useExtensionStore = create<ExtensionStore>((set, get) => ({
       [zipPath, scope],
       get().loadExtensions
     );
-    return result ?? { success: false, error: 'Import failed' };
+    return result ?? { success: false, id: '', name: '', type: 'extension', scope, error: 'Import failed' };
   },
 
   importSkillZip: async (zipPath: string, scope: 'global' | 'project') => {
@@ -97,7 +97,7 @@ export const useExtensionStore = create<ExtensionStore>((set, get) => ({
       [zipPath, scope],
       get().loadSkills
     );
-    return result ?? { success: false, error: 'Import failed' };
+    return result ?? { success: false, id: '', name: '', type: 'skill', scope, error: 'Import failed' };
   },
 
   importSkillMd: async (mdPath: string, scope: 'global' | 'project') => {
@@ -106,6 +106,6 @@ export const useExtensionStore = create<ExtensionStore>((set, get) => ({
       [mdPath, scope],
       get().loadSkills
     );
-    return result ?? { success: false, error: 'Import failed' };
+    return result ?? { success: false, id: '', name: '', type: 'skill', scope, error: 'Import failed' };
   },
 }));

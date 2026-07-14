@@ -1,5 +1,5 @@
-import { Type } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type } from 'typebox';
+import type { ToolDefinition } from '@earendil-works/pi-coding-agent';
 import type {
   TaskManager,
   TaskStatus,
@@ -75,7 +75,7 @@ export function createTaskTools(
           (id) => ({ type: 'blocked_by' as const, taskId: id })
         );
 
-        const task = taskManager.createTask(projectPath, {
+        const task = await taskManager.createTask(projectPath, {
           title: p.title,
           description: p.description,
           type: p.type,
@@ -172,7 +172,7 @@ export function createTaskTools(
         };
 
         // Load board and find existing task for dependency merging
-        const board = taskManager.loadBoard(projectPath);
+        const board = await taskManager.loadBoard(projectPath);
         const existing = board.tasks.find((t) => t.id === p.task_id);
 
         if (!existing) {
@@ -221,7 +221,7 @@ export function createTaskTools(
         if (p.assignee !== undefined) updates.assignee = p.assignee;
         if (updatedDeps !== undefined) updates.dependencies = updatedDeps;
 
-        const task = taskManager.updateTask(
+        const task = await taskManager.updateTask(
           projectPath,
           p.task_id,
           updates
@@ -306,7 +306,7 @@ export function createTaskTools(
 
         // Mode 1: Get specific task by ID
         if (p.task_id) {
-          const board = taskManager.loadBoard(projectPath);
+          const board = await taskManager.loadBoard(projectPath);
           const task = board.tasks.find((t) => t.id === p.task_id);
 
           if (!task) {
@@ -321,7 +321,7 @@ export function createTaskTools(
             };
           }
 
-          const chain = taskManager.getDependencyChain(
+          const chain = await taskManager.getDependencyChain(
             projectPath,
             p.task_id
           );
@@ -355,7 +355,7 @@ export function createTaskTools(
 
         // Mode 2: Ready tasks
         if (p.ready) {
-          const ready = taskManager.getReadyTasks(projectPath);
+          const ready = await taskManager.getReadyTasks(projectPath);
           return {
             content: [
               {
@@ -381,7 +381,7 @@ export function createTaskTools(
         }
 
         // Mode 3: Filtered query
-        const tasks = taskManager.queryTasks(projectPath, {
+        const tasks = await taskManager.queryTasks(projectPath, {
           status: p.status as TaskStatus[] | undefined,
           priority: p.priority as TaskPriority[] | undefined,
           type: p.type as TaskType[] | undefined,
@@ -443,7 +443,7 @@ export function createTaskTools(
       try {
         const p = params as { task_id: string; text: string };
 
-        const comment = taskManager.addComment(
+        const comment = await taskManager.addComment(
           projectPath,
           p.task_id,
           p.text,

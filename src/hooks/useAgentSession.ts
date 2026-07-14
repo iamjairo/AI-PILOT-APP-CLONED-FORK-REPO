@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
-import type { AgentSessionEvent, ContextUsage, ModelCycleResult } from '@mariozechner/pi-coding-agent';
+import type { AgentSessionEvent, ContextUsage, ModelCycleResult } from '@earendil-works/pi-coding-agent';
 // ImageContent import removed — images now saved to disk and read by the agent's read tool
-import { useChatStore } from '../stores/chat-store';
+import { useChatStore, type SessionTokens } from '../stores/chat-store';
 import { useTabStore } from '../stores/tab-store';
 import { useProjectStore } from '../stores/project-store';
 import { useSessionStore } from '../stores/session-store';
@@ -12,9 +12,21 @@ import { invoke, on } from '../lib/ipc-client';
 import { IPC } from '../../shared/ipc';
 import { cleanErrorMessage } from '../lib/error-messages';
 
+/**
+ * App-custom session events broadcast over IPC that are NOT part of the SDK's
+ * `AgentSessionEvent` union (e.g. companion ↔ desktop message sync, memory
+ * command results). Unioned with the SDK type so the `handleEvent` switch can
+ * discriminate on them.
+ */
+type CustomSessionEvent =
+  | { type: 'user_message'; content?: string; timestamp?: number }
+  | { type: 'system_message'; content?: string };
+
+type SessionEvent = AgentSessionEvent | CustomSessionEvent;
+
 interface AgentEventPayload {
   tabId: string;
-  event: AgentSessionEvent & { content?: string };
+  event: SessionEvent;
 }
 
 interface MemoryUpdatedPayload {
@@ -46,7 +58,7 @@ async function refreshSessionStats(tabId: string) {
 
   try {
     const [stats, contextUsage, modelInfo] = await Promise.all([
-      invoke(IPC.SESSION_GET_STATS, tabId) as Promise<{ tokens?: Record<string, number>; cost?: number } | null>,
+      invoke(IPC.SESSION_GET_STATS, tabId) as Promise<{ tokens?: SessionTokens; cost?: number } | null>,
       invoke(IPC.SESSION_GET_CONTEXT_USAGE, tabId) as Promise<ContextUsage | null>,
       invoke(IPC.MODEL_GET_INFO, tabId) as Promise<ModelInfo | null>,
     ]);
@@ -153,7 +165,7 @@ export function useAgentSession() {
     };
   }, []);
 
-  function handleEvent(tabId: string, event: AgentSessionEvent & { content?: string; images?: any[]; timestamp?: number }) {
+  function handleEvent(tabId: string, event: SessionEvent) {
     switch (event.type) {
       case 'user_message': {
         // User message broadcast from main process (companion ↔ desktop sync).
@@ -176,7 +188,7 @@ export function useAgentSession() {
         addMessage(tabId, {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: event.content,
+          content: event.content || '',
           timestamp: Date.now(),
         });
         // Refresh memory count after save/forget
@@ -219,6 +231,7 @@ export function useAgentSession() {
         refreshSessionStats(tabId);
         break;
       }
+      case 'agent_settled':
       case 'turn_end':
         setStreaming(tabId, false);
         refreshSessionStats(tabId);

@@ -32,7 +32,7 @@ export const useDevCommandStore = create<DevCommandStore>((set, get) => ({
   setShowOutput: (show: boolean) => set({ showOutput: show }),
 
   loadCommands: async (projectPath: string) => {
-    const commands = await invoke(IPC.DEV_LOAD_CONFIG, projectPath);
+    const commands = (await invoke(IPC.DEV_LOAD_CONFIG, projectPath)) as DevCommand[];
     set({ commands });
   },
 
@@ -42,7 +42,7 @@ export const useDevCommandStore = create<DevCommandStore>((set, get) => ({
   },
 
   runCommand: async (commandId: string) => {
-    const state = await invoke(IPC.DEV_RUN_COMMAND, commandId);
+    const state = (await invoke(IPC.DEV_RUN_COMMAND, commandId)) as DevCommandState;
     set((s) => ({
       states: { ...s.states, [commandId]: state },
     }));

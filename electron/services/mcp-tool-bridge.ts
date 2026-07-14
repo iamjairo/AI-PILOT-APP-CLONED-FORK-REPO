@@ -5,8 +5,8 @@
  * Converts JSON Schema to TypeBox and wraps MCP callTool in Pi's execute signature.
  */
 
-import { Type, type TSchema } from '@sinclair/typebox';
-import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
+import { Type, type TSchema } from 'typebox';
+import type { ToolDefinition } from '@earendil-works/pi-coding-agent';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { getLogger } from './logger';
 

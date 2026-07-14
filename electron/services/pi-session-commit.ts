@@ -5,9 +5,11 @@
  * prompt building, and API call logic for generating git commit messages.
  */
 
-import type { AuthStorage, ModelRegistry } from '@mariozechner/pi-coding-agent';
-import type { TextContent, Context } from '@mariozechner/pi-ai';
-import { completeSimple } from '@mariozechner/pi-ai';
+import type { AuthStorage, ModelRegistry } from '@earendil-works/pi-coding-agent';
+import type { TextContent, Context } from '@earendil-works/pi-ai';
+// completeSimple is no longer re-exported from the pi-ai package root in v0.80;
+// it now lives on the `/compat` subpath (same module ModelRegistry consumes).
+import { completeSimple } from '@earendil-works/pi-ai/compat';
 import { loadAppSettings } from './app-settings';
 
 /**

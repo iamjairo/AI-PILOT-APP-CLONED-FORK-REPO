@@ -48,7 +48,7 @@ export default function DesktopViewer({ wsPort, vncPassword }: DesktopViewerProp
   const [retries, setRetries] = useState(0);
   const [ready, setReady] = useState(false);
   const [interactive, setInteractive] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const retriesRef = useRef(retries);
   retriesRef.current = retries;
 
