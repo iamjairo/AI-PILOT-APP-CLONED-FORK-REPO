@@ -52,7 +52,7 @@ export default function ExtensionManager() {
               No extensions installed
             </p>
             <p className="text-xs text-text-secondary text-center max-w-md">
-              Extensions can add custom tools, providers, and functionality to Pilot.
+              Extensions can add custom tools, providers, and functionality to AI-Pilot.
             </p>
           </div>
         ) : (

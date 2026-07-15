@@ -21,7 +21,7 @@ export function CompanionTitleBar() {
       {/* Center - app title + project */}
       <div className="flex-1 flex items-center justify-center gap-1.5">
         <img src={appIcon} alt="" className="w-4 h-4" draggable={false} />
-        <span className="text-text-secondary text-xs font-medium">Pilot</span>
+        <span className="text-text-secondary text-xs font-medium">AI-Pilot</span>
         {projectName && (
           <>
             <span className="text-text-secondary/40 text-xs">—</span>

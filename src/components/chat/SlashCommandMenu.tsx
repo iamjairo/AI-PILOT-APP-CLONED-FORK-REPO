@@ -33,7 +33,7 @@ function getSourceIcon(source: string) {
 
 function getSourceLabel(source: string): string {
   switch (source) {
-    case 'pilot': return 'Pilot';
+    case 'pilot': return 'AI-Pilot';
     case 'prompt': return 'Prompt';
     case 'skill': return 'Skill';
     case 'extension': return 'Extension';

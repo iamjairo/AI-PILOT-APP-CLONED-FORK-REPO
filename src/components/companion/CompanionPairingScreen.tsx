@@ -16,12 +16,12 @@ interface CompanionPairingScreenProps {
 export function CompanionPairingScreen({ onPaired }: CompanionPairingScreenProps) {
   const backendStatus = getExternalBackendStatus();
   const browserCompanion = isCompanionMode();
-  const backendLabel = browserCompanion ? 'Pilot Desktop' : 'Pilot backend';
-  const pinSourceLabel = browserCompanion ? 'your Pilot Desktop' : 'the remote backend';
-  const heading = browserCompanion ? 'Pilot Companion' : 'Pilot Backend Pairing';
+  const backendLabel = browserCompanion ? 'AI-Pilot Desktop' : 'AI-Pilot backend';
+  const pinSourceLabel = browserCompanion ? 'your AI-Pilot Desktop' : 'the remote backend';
+  const heading = browserCompanion ? 'AI-Pilot Companion' : 'AI-Pilot Backend Pairing';
   const subtitle = browserCompanion
-    ? 'Connect this device to your Pilot Desktop'
-    : 'Connect this Pilot app to your remote backend';
+    ? 'Connect this device to your AI-Pilot Desktop'
+    : 'Connect this AI-Pilot app to your remote backend';
   const [pin, setPin] = useState('');
   const [deviceName, setDeviceName] = useState(() => getDefaultDeviceName());
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +152,7 @@ export function CompanionPairingScreen({ onPaired }: CompanionPairingScreenProps
       await invoke(IPC.APP_RELAUNCH);
     } catch (err) {
       setResettingBackendUrl(false);
-      setError(err instanceof Error ? err.message : 'Failed to relaunch Pilot');
+      setError(err instanceof Error ? err.message : 'Failed to relaunch AI-Pilot');
     }
   }, []);
 

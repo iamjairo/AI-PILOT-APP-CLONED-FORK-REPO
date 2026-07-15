@@ -41,7 +41,7 @@ export function AboutDialog() {
       <div className="bg-bg-surface border border-border rounded-lg shadow-xl w-full max-w-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-base font-semibold text-text-primary">About Pilot</h2>
+          <h2 className="text-base font-semibold text-text-primary">About AI-Pilot</h2>
           <button
             onClick={closeAbout}
             className="p-1 hover:bg-bg-elevated rounded transition-colors"
@@ -54,7 +54,7 @@ export function AboutDialog() {
         <div className="px-5 py-5 space-y-5">
           {/* App identity */}
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight">Pilot</h1>
+            <h1 className="text-2xl font-bold text-text-primary tracking-tight">AI-Pilot</h1>
             <p className="text-sm text-text-secondary mt-1">
               Interactive Agentic Environment (IAE)
             </p>

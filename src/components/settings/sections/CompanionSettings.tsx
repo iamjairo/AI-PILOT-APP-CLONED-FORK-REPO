@@ -71,7 +71,7 @@ export function CompanionSettings() {
       <SettingRow
         icon={<Smartphone className="w-4 h-4 text-accent" />}
         label="Companion Server"
-        description="Enable the companion server to access Pilot from your iPhone, iPad, or any browser on the local network."
+        description="Enable the companion server to access AI-Pilot from your iPhone, iPad, or any browser on the local network."
       >
         <div className="flex items-center gap-2">
           {status?.running && (
@@ -130,7 +130,7 @@ export function CompanionSettings() {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-xs text-text-secondary">Start on launch</span>
-            <p className="text-[11px] text-text-tertiary mt-0.5">Automatically start the companion server when Pilot opens</p>
+            <p className="text-[11px] text-text-tertiary mt-0.5">Automatically start the companion server when AI-Pilot opens</p>
           </div>
           <Toggle
             checked={status?.autoStart ?? false}

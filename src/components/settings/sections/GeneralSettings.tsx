@@ -183,7 +183,7 @@ export function GeneralSettings() {
       <SettingRow
         icon={<Globe className="w-4 h-4 text-accent" />}
         label="Remote Backend URL"
-        description="Optional external backend for thin-client mode. Example: https://nas.local:18088. Restart Pilot after changing this."
+        description="Optional external backend for thin-client mode. Example: https://nas.local:18088. Restart AI-Pilot after changing this."
       >
         <div className="flex items-center gap-1.5">
           <input

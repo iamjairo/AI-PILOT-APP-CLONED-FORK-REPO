@@ -12,7 +12,7 @@ export function getRemoteBackendCompatibility(details: RemoteBackendHealthRespon
   if (details.appVersion === PILOT_APP_VERSION) {
     return {
       status: 'compatible',
-      message: `Compatible with Pilot ${PILOT_APP_VERSION}`,
+      message: `Compatible with AI-Pilot ${PILOT_APP_VERSION}`,
     };
   }
 

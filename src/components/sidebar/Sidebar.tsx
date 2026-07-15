@@ -120,6 +120,11 @@ export default function Sidebar() {
                       })}
                     />
                   )}
+                  <MenuItem
+                    icon="Code2"
+                    label="e-Editor"
+                    onClick={() => act(() => useTabStore.getState().addEditorTab())}
+                  />
                 </MenuSection>
                 <MenuDivider />
                 <MenuSection label="Help">
@@ -128,7 +133,7 @@ export default function Sidebar() {
                   })} />
                   <MenuItem icon="Keyboard" label="Keyboard Shortcuts" onClick={() => act(() => openSettings('keybindings'))} />
                   <MenuItem icon="Settings" label="Settings" onClick={() => act(() => openSettings())} />
-                  <MenuItem icon="Info" label="About Pilot" onClick={() => act(() => useUIStore.getState().openAbout())} />
+                  <MenuItem icon="Info" label="About AI-Pilot" onClick={() => act(() => useUIStore.getState().openAbout())} />
                 </MenuSection>
               </div>
             )}

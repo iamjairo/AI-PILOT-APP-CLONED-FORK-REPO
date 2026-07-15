@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, net, protocol, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, Tray, nativeImage, net, protocol, shell } from 'electron';
 import { join } from 'path';
 import { initLogger, getLogger, shutdownLogger } from '../services/logger';
 import { loadAppSettings } from '../services/app-settings';
@@ -7,10 +7,14 @@ import { BackendRuntime } from '../services/backend-runtime';
 import { registerSettingsIpc } from '../ipc/settings';
 import { registerShellIpc } from '../ipc/shell';
 import { registerThemeIpc } from '../ipc/theme';
+import { registerEditorStoreIpc } from '../ipc/editor-store';
+import { registerDocsIpc } from '../ipc/docs';
 import { isBackendOnlyMode, resolveRemoteBackendUrl } from '../utils/runtime-mode';
 import { shouldTrustRemoteBackendCertificate } from '../utils/remote-backend-cert';
 
 let mainWindow: BrowserWindow | null = null;
+// Module-scope ref — if the Tray is garbage-collected the menu-bar icon disappears.
+let tray: Tray | null = null;
 const backendRuntime = new BackendRuntime();
 let developerModeEnabled = false;
 const backendOnlyMode = isBackendOnlyMode();
@@ -191,8 +195,9 @@ function createWindow() {
   // Show window when ready to prevent flash
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show();
-    // Open DevTools in dev mode for debugging
-    if (process.env.ELECTRON_RENDERER_URL) {
+    // DevTools no longer auto-opens in dev — opt in with PILOT_DEVTOOLS=1
+    // (or use the standard toggle shortcut / View menu at any time).
+    if (process.env.ELECTRON_RENDERER_URL && process.env.PILOT_DEVTOOLS === '1') {
       mainWindow?.webContents.openDevTools({ mode: 'detach' });
     }
   });
@@ -303,6 +308,8 @@ app.whenReady().then(async () => {
     registerSettingsIpc();
     registerShellIpc();
     registerThemeIpc(backendRuntime.themeService);
+    registerEditorStoreIpc();
+    registerDocsIpc();
   }
 
   // Window control IPC handlers
@@ -343,6 +350,36 @@ app.whenReady().then(async () => {
   // Set dock icon on macOS (BrowserWindow icon only applies to Windows/Linux)
   if (!backendOnlyMode && isMac && app.dock) {
     app.dock.setIcon(join(__dirname, '../../resources/icon.png'));
+  }
+
+  // Menu-bar tray (macOS): the AI-Pilot robot in full color (user's artwork,
+  // tight-cropped, transparent background). Not a template image on purpose —
+  // the robot keeps its colors in both light and dark menu bars. @2x is
+  // picked up automatically for Retina.
+  if (!backendOnlyMode && isMac) {
+    const trayImage = nativeImage.createFromPath(join(__dirname, '../../resources/tray.png'));
+    if (!trayImage.isEmpty()) {
+      tray = new Tray(trayImage);
+      tray.setToolTip('AI-Pilot');
+      const showApp = () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+          createWindow();
+        } else {
+          mainWindow?.show();
+          mainWindow?.focus();
+        }
+      };
+      tray.setContextMenu(
+        Menu.buildFromTemplate([
+          { label: 'Open AI-Pilot', click: showApp },
+          { type: 'separator' },
+          { label: 'New Conversation', click: () => { showApp(); mainWindow?.webContents.send(IPC.TRAY_NEW_CONVERSATION); } },
+          { type: 'separator' },
+          { label: 'Quit AI-Pilot', role: 'quit' },
+        ])
+      );
+      tray.on('click', showApp);
+    }
   }
 
   app.on('activate', () => {

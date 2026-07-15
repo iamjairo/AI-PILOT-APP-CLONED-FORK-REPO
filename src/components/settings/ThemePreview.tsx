@@ -60,7 +60,7 @@ export function ThemePreview({ theme }: ThemePreviewProps) {
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: success }} />
           </div>
           <div className="flex-1 text-center">
-            <span className="text-[10px]" style={{ color: textSec }}>Pilot — my-project</span>
+            <span className="text-[10px]" style={{ color: textSec }}>AI-Pilot — my-project</span>
           </div>
         </div>
 

@@ -190,7 +190,7 @@ export function CompanionPairing({ status }: CompanionPairingProps) {
                 className="block"
               />
               <p className="text-[11px] text-gray-500">
-                Scan with Pilot Companion
+                Scan with AI-Pilot Companion
                 {pinExpiry && ` · ${pinTimeRemaining > 0 ? `${pinTimeRemaining}s` : 'expired'}`}
               </p>
               {qrHost && (

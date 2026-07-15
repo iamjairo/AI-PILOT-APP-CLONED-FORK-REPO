@@ -11,6 +11,7 @@ import SettingsPanel from './components/settings/SettingsPanel';
 import { AboutDialog } from './components/about/AboutDialog';
 import { UrlConfirmDialog } from './components/dialogs/UrlConfirmDialog';
 import { OutputWindowManager } from './components/command-center/OutputWindowManager';
+import { LaunchGreeting } from './components/shared/LaunchGreeting';
 import { useTabStore } from './stores/tab-store';
 import { useUIStore } from './stores/ui-store';
 import { useSandboxStore } from './stores/sandbox-store';
@@ -184,6 +185,16 @@ function App() {
     return unsub;
   }, []);
 
+  // Menu-bar tray → new conversation (mirrors the sidebar action)
+  useEffect(() => {
+    const unsub = on(IPC.TRAY_NEW_CONVERSATION, () => {
+      if (!useTabStore.getState().addTab()) {
+        useProjectStore.getState().openProjectDialog();
+      }
+    });
+    return unsub;
+  }, []);
+
   useEffect(() => {
     const unsub = on('menu:close-tab', () => {
       const { activeTabId, closeTab } = useTabStore.getState();
@@ -259,9 +270,9 @@ function App() {
   useEffect(() => {
     if (projectPath) {
       const projectName = projectPath.split('/').pop() || projectPath;
-      document.title = `Pilot — [${projectName}]`;
+      document.title = `AI-Pilot — [${projectName}]`;
     } else {
-      document.title = 'Pilot';
+      document.title = 'AI-Pilot';
     }
   }, [projectPath]);
 
@@ -339,6 +350,7 @@ function App() {
       <UrlConfirmDialog />
       <CommandPalette />
       <OutputWindowManager />
+      <LaunchGreeting />
     </div>
   );
 }

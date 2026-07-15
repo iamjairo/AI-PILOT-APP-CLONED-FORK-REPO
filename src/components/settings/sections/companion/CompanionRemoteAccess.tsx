@@ -77,7 +77,7 @@ export function CompanionRemoteAccess({ status, onStatusChanged }: CompanionRemo
         <div className="mt-0.5"><Globe className="w-4 h-4 text-text-secondary" /></div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-text-primary">Remote Access</p>
-          <p className="text-xs text-text-secondary mt-0.5">Access Pilot through Tailscale, Cloudflare Tunnel, or a local-first Caddy reverse proxy.</p>
+          <p className="text-xs text-text-secondary mt-0.5">Access AI-Pilot through Tailscale, Cloudflare Tunnel, or a local-first Caddy reverse proxy.</p>
         </div>
       </div>
 
