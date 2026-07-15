@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc';
+import type { EditorAiAnalyzeRequest } from '../../shared/types';
 import type { PilotSessionManager } from '../services/pi-session-manager';
 import type { PromptLibrary } from '../services/prompt-library';
 import { ORCHESTRATOR_SYSTEM_PROMPT } from '../services/orchestrator-prompt';
@@ -320,5 +321,10 @@ export function registerAgentIpc(sessionManager: PilotSessionManager) {
   // Generate a commit message from a git diff (one-shot LLM call, no session)
   ipcMain.handle(IPC.GIT_GENERATE_COMMIT_MSG, async (_event, diff: string) => {
     return sessionManager.generateCommitMessage(diff);
+  });
+
+  // e-Editor: one-shot AI review of the playground's HTML/CSS/JS
+  ipcMain.handle(IPC.EDITOR_AI_ANALYZE, async (_event, req: EditorAiAnalyzeRequest) => {
+    return sessionManager.analyzeEditorCode(req);
   });
 }

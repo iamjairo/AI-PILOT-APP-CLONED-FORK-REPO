@@ -27,6 +27,8 @@ import { getSessionDir } from './pi-session-helpers';
 import { generateSuggestions, type FollowUpSuggestion } from './suggestion-generator';
 import { buildSessionConfig } from './pi-session-config';
 import { generateCommitMessage } from './pi-session-commit';
+import { runEditorAnalysis } from './editor-ai-analyze';
+import type { EditorAiAnalyzeRequest, EditorAiAnalyzeResult } from '../../shared/types';
 import { listSessions, listAllSessions, deleteSession } from './pi-session-listing';
 import {
   getSlashCommands,
@@ -661,6 +663,10 @@ export class PilotSessionManager {
 
   async generateCommitMessage(diff: string): Promise<string> {
     return generateCommitMessage(diff, this.modelRegistry, this.authStorage);
+  }
+
+  async analyzeEditorCode(req: EditorAiAnalyzeRequest): Promise<EditorAiAnalyzeResult> {
+    return runEditorAnalysis(req, this.modelRegistry, this.authStorage);
   }
 
   // ─── Private helpers ────────────────────────────────────────────

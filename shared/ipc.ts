@@ -293,6 +293,24 @@ export const IPC = {
   EDITOR_OPEN_FILE: 'editor:open-file',     // main → renderer
   EDITOR_OPEN_URL: 'editor:open-url',       // main → renderer
 
+  // e-Editor: AI analyze (renderer → main invoke)
+  EDITOR_AI_ANALYZE: 'editor:ai-analyze',
+
+  // e-Editor: persistent store + cross-device sync
+  EDITOR_STORE_GET: 'editor-store:get',        // renderer → main invoke
+  EDITOR_STORE_SET: 'editor-store:set',        // renderer → main invoke
+  EDITOR_STORE_LIST: 'editor-store:list',      // renderer → main invoke
+  EDITOR_STORE_DELETE: 'editor-store:delete',  // renderer → main invoke
+  EDITOR_STORE_GET_STATUS: 'editor-store:get-status', // renderer → main invoke
+  EDITOR_STORE_STATUS: 'editor-store:status',  // main → renderer push (connection state)
+  EDITOR_STORE_CHANGED: 'editor-store:changed', // main → renderer push (LISTEN/NOTIFY)
+
+  // Docs/Reader: fetch + clean-extract a URL (renderer → main invoke)
+  DOCS_FETCH_URL: 'docs:fetch-url',
+
+  // Menu-bar tray (main → renderer)
+  TRAY_NEW_CONVERSATION: 'tray:new-conversation',
+
   // Web Tab (agent → renderer)
   WEB_TAB_OPEN: 'web-tab:open',              // main → renderer
   WEB_TAB_LOAD_FAILED: 'web-tab:load-failed', // main → renderer

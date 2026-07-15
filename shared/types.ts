@@ -858,3 +858,60 @@ export interface WebTabOpenPayload {
   title?: string;
   projectPath: string | null;
 }
+
+// ── e-Editor: AI analyze ──────────────────────────────────────────────
+export type EEditorFileKey = 'html' | 'css' | 'js';
+
+export interface EditorAiAnalyzeRequest {
+  html: string;
+  css: string;
+  js: string;
+  activeFile: EEditorFileKey;
+}
+
+export interface EditorAiIssue {
+  file: EEditorFileKey;
+  line: number;
+  endLine?: number;
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  /** Optional replacement text for the line (range), if a fix is available. */
+  fix?: string;
+}
+
+export interface EditorAiAnalyzeResult {
+  ok: boolean;
+  issues: EditorAiIssue[];
+  summary?: string;
+  error?: string;
+}
+
+// ── e-Editor: persistent store + cross-device sync ────────────────────
+export interface EditorStoreRecord {
+  key: string;
+  value: unknown;
+  updatedAt: number;
+}
+
+export type EditorStoreStatus =
+  | { connected: true; backend: 'postgres' }
+  | { connected: false; backend: 'local'; reason?: string };
+
+/** Push payload when another device changes a stored key (LISTEN/NOTIFY). */
+export interface EditorStoreChange {
+  key: string;
+  updatedAt: number;
+}
+
+// ── Docs/Reader: fetch + clean-extract ────────────────────────────────
+export interface DocsFetchResult {
+  ok: boolean;
+  url: string;
+  finalUrl?: string;
+  title?: string;
+  byline?: string;
+  /** Cleaned + sanitized article HTML (Readability output). */
+  html?: string;
+  text?: string;
+  error?: string;
+}

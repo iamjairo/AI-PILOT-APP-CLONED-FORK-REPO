@@ -11,6 +11,7 @@ const TAB_ICON: Record<TabState['type'], keyof typeof icons> = {
   docs: 'BookOpen',
   web: 'Globe',
   desktop: 'Monitor',
+  editor: 'Code2',
 };
 
 interface ProjectTabRowProps {

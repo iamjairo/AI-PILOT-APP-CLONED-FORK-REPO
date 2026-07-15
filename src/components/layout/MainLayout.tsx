@@ -9,6 +9,7 @@ import { TaskBoardView } from '../tasks/TaskBoardView';
 import { DocsViewer } from '../docs/DocsViewer';
 import { WebView } from '../web/WebView';
 import DesktopTabView from '../desktop/DesktopTabView';
+import { EEditor } from '../editor/EEditor';
 import ArtifactPanel from '../artifacts/ArtifactPanel';
 
 export default function MainLayout() {
@@ -37,6 +38,8 @@ export default function MainLayout() {
         return <WebView />;
       case 'desktop':
         return <DesktopTabView />;
+      case 'editor':
+        return <EEditor />;
       default:
         return <ChatView />;
     }

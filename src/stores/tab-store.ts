@@ -10,7 +10,7 @@ import { useArtifactStore } from './artifact-store';
  */
 export interface TabState {
   id: string;
-  type: 'chat' | 'file' | 'tasks' | 'docs' | 'web' | 'desktop';
+  type: 'chat' | 'file' | 'tasks' | 'docs' | 'web' | 'desktop' | 'editor';
   filePath: string | null; // for file tabs; URL for web tabs
   title: string;
   projectPath: string | null;
@@ -53,6 +53,7 @@ interface TabStore {
   addDocsTab: (page?: string) => string;
   addWebTab: (url: string, projectPath: string | null, title?: string, background?: boolean) => string;
   addDesktopTab: (projectPath: string) => string;
+  addEditorTab: () => string;
   closeTab: (tabId: string) => void;
   switchTab: (tabId: string) => void;
   switchToTabByIndex: (index: number) => void;
@@ -289,6 +290,47 @@ export const useTabStore = create<TabStore>((set, get) => {
       };
 
       set(state => ({
+        tabs: [...state.tabs, newTab],
+        activeTabId: newTabId,
+      }));
+
+      return newTabId;
+    },
+
+    addEditorTab: () => {
+      // Singleton: reuse the existing e-Editor tab if one is already open.
+      const existing = get().tabs.find((t) => t.type === 'editor');
+      if (existing) {
+        get().switchTab(existing.id);
+        return existing.id;
+      }
+
+      const newTabId = crypto.randomUUID();
+      const tabs = get().tabs;
+      const maxOrder = tabs.length > 0 ? Math.max(...tabs.map((t) => t.order)) : -1;
+
+      const newTab: TabState = {
+        id: newTabId,
+        type: 'editor',
+        filePath: null,
+        title: 'e-Editor',
+        projectPath: null,
+        sessionPath: null,
+        projectColor: '',
+        isPinned: false,
+        order: maxOrder + 1,
+        scrollPosition: 0,
+        inputDraft: '',
+        panelConfig: {
+          sidebarVisible: true,
+          contextPanelVisible: false,
+          contextPanelTab: 'files',
+        },
+        lastActiveAt: Date.now(),
+        hasUnread: false,
+      };
+
+      set((state) => ({
         tabs: [...state.tabs, newTab],
         activeTabId: newTabId,
       }));
