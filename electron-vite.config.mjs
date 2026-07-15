@@ -54,16 +54,51 @@ function copyWasmPlugin() {
   };
 }
 
+// Debug-only: connect the renderer to the standalone react-devtools (`npx react-devtools`).
+// Injects the 8097 agent script BEFORE the app bundle (so it hooks React before
+// react-dom loads) and adds localhost:8097 to script-src. Opt-in twice over:
+// only in dev serve mode AND only when PILOT_DEVTOOLS=1 (use `npm run dev:debug`).
+// Production builds and normal `npm run dev` are untouched.
+function reactDevtoolsStandalonePlugin() {
+  return {
+    name: 'react-devtools-standalone',
+    apply: (_, { command }) => command === 'serve' && process.env.PILOT_DEVTOOLS === '1',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        return {
+          html: html.replace("script-src 'self'", "script-src 'self' http://localhost:8097"),
+          tags: [
+            {
+              tag: 'script',
+              attrs: { src: 'http://localhost:8097' },
+              injectTo: 'head-prepend',
+            },
+          ],
+        };
+      },
+    },
+  };
+}
+
 export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin({
+        // The @earendil-works/pi-* packages are ESM-only (exports has no
+        // `require`/`default` condition), so they must be BUNDLED into the CJS
+        // main output rather than externalized (which would `require()` them and
+        // throw ERR_PACKAGE_PATH_NOT_EXPORTED at runtime). Their transitive deps
+        // are all CJS or dual, so they can stay external.
         exclude: [
-          '@mariozechner/pi-coding-agent',
-          '@mariozechner/pi-agent-core',
-          '@mariozechner/pi-ai',
-          '@mariozechner/pi-tui',
-          '@mariozechner/jiti',
+          '@earendil-works/pi-coding-agent',
+          '@earendil-works/pi-agent-core',
+          '@earendil-works/pi-ai',
+          '@earendil-works/pi-tui',
+          // Bundled too: the pi packages import these via subpaths that the
+          // packages' own `exports` maps don't expose (would throw
+          // ERR_PACKAGE_PATH_NOT_EXPORTED if externalized/required at runtime).
+          'highlight.js',
         ]
       }),
       fixInteropPlugin(),
@@ -93,7 +128,7 @@ export default defineConfig({
         input: path.resolve(__dirname, 'src/index.html')
       }
     },
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), reactDevtoolsStandalonePlugin()],
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version),
       __GIT_SHA__: JSON.stringify(gitSha),
