@@ -8,6 +8,7 @@ import { useTabStore } from '../../stores/tab-store';
 import { isCompanionMode } from '../../lib/ipc-client';
 import { Icon } from '../shared/Icon';
 import { Tooltip } from '../shared/Tooltip';
+import { EEditorIcon } from '../editor/EEditorIcon';
 import { SessionList } from './SessionList';
 import { SidebarMemoryPane } from './SidebarMemoryPane';
 import { SidebarTasksPane } from './SidebarTasksPane';
@@ -188,6 +189,17 @@ export default function Sidebar() {
             }}
           >
             <Icon name="ListTodo" className="w-4 h-4" />
+          </button>
+        </Tooltip>
+
+        {/* e-Editor tab */}
+        <Tooltip content="e-Editor" position="right">
+          <button
+            className="p-2 rounded-md transition-colors hover:bg-bg-elevated text-text-secondary"
+            onClick={() => useTabStore.getState().addEditorTab()}
+            aria-label="e-Editor"
+          >
+            <EEditorIcon size={16} />
           </button>
         </Tooltip>
 

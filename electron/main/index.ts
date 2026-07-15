@@ -76,6 +76,12 @@ function buildApplicationMenu() {
         { role: 'zoomIn' as const },
         { role: 'zoomOut' as const },
         { type: 'separator' as const },
+        {
+          label: 'e-Editor',
+          accelerator: isMac ? 'Cmd+Shift+E' : 'Ctrl+Shift+E',
+          click: () => mainWindow?.webContents.send('menu:open-editor'),
+        },
+        { type: 'separator' as const },
         { role: 'togglefullscreen' as const },
       ]
     },
@@ -115,7 +121,7 @@ function buildApplicationMenu() {
         },
         { type: 'separator' as const },
         {
-          label: 'About Pilot',
+          label: 'About AI-Pilot',
           click: () => mainWindow?.webContents.send('menu:about'),
         },
       ],

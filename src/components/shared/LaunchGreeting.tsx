@@ -72,9 +72,11 @@ export function LaunchGreeting() {
         .lg-stage { animation: lg-pop .55s cubic-bezier(.34,1.4,.5,1) both; }
         .lg-bobber { animation: lg-bob 2.4s ease-in-out .6s infinite; }
         .lg-bubble { animation: lg-bubble .4s cubic-bezier(.34,1.56,.64,1) .55s both; transform-origin: 18% 92%; }
+        @keyframes lg-twirl { 0% { transform: rotate(0deg) scale(1); } 45% { transform: rotate(200deg) scale(.92); } 100% { transform: rotate(360deg) scale(1); } }
         .lg-arm { animation: lg-wave 1.1s ease-in-out .7s 3; transform-box: view-box; transform-origin: 566px 505px; }
         .lg-eyes { animation: lg-blink 3.2s ease-in-out 1s infinite; transform-box: view-box; transform-origin: 448px 330px; }
         .lg-bubble { transform-box: view-box; transform-origin: 610px 370px; }
+        .lg-twirler { animation: lg-twirl .9s cubic-bezier(.45,.05,.35,1) 2.1s 1 both; transform-box: view-box; transform-origin: 448px 470px; }
       `}</style>
 
       <div className="lg-stage">
@@ -98,6 +100,8 @@ export function LaunchGreeting() {
               </text>
             </g>
 
+            {/* robot — wrapped so the twirl spins him while the bubble stays put */}
+            <g className="lg-twirler">
             {/* antenna */}
             <rect x="438" y="180" width="20" height="70" rx="10" fill="#5f6379" />
             <ellipse cx="448" cy="172" rx="22" ry="26" fill="#5f6379" />
@@ -115,6 +119,8 @@ export function LaunchGreeting() {
               <circle cx="416" cy="322" r="8" fill="#ffffff" />
               <circle cx="496" cy="322" r="8" fill="#ffffff" />
             </g>
+            {/* happy smile */}
+            <path d="M412 356 Q448 380 484 356" stroke="#2f3040" strokeWidth="9" strokeLinecap="round" fill="none" />
 
             {/* neck */}
             <rect x="408" y="412" width="80" height="42" rx="12" fill="#2f3040" />
@@ -138,6 +144,7 @@ export function LaunchGreeting() {
             {/* lower dome + tail */}
             <path d="M366 668 A 82 78 0 0 0 530 668 Z" fill="#9fcdf3" />
             <ellipse cx="448" cy="756" rx="26" ry="30" fill="#5f6379" />
+            </g>
           </svg>
         </div>
       </div>

@@ -195,6 +195,14 @@ function App() {
     return unsub;
   }, []);
 
+  // Native View menu → e-Editor tab
+  useEffect(() => {
+    const unsub = on('menu:open-editor', () => {
+      useTabStore.getState().addEditorTab();
+    });
+    return unsub;
+  }, []);
+
   useEffect(() => {
     const unsub = on('menu:close-tab', () => {
       const { activeTabId, closeTab } = useTabStore.getState();
