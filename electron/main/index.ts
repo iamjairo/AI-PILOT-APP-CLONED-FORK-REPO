@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, Tray, nativeImage, net, protocol, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, Tray, nativeImage, net, protocol, shell, screen } from 'electron';
 import { join } from 'path';
 import { initLogger, getLogger, shutdownLogger } from '../services/logger';
 import { loadAppSettings } from '../services/app-settings';
@@ -9,6 +9,7 @@ import { registerShellIpc } from '../ipc/shell';
 import { registerThemeIpc } from '../ipc/theme';
 import { registerEditorStoreIpc } from '../ipc/editor-store';
 import { registerDocsIpc } from '../ipc/docs';
+import { registerChatExporterIpc } from '../ipc/chat-exporter';
 import { isBackendOnlyMode, resolveRemoteBackendUrl } from '../utils/runtime-mode';
 import { shouldTrustRemoteBackendCertificate } from '../utils/remote-backend-cert';
 
@@ -80,6 +81,11 @@ function buildApplicationMenu() {
           label: 'e-Editor',
           accelerator: isMac ? 'Cmd+Shift+E' : 'Ctrl+Shift+E',
           click: () => mainWindow?.webContents.send('menu:open-editor'),
+        },
+        {
+          label: 'Chat Exporter',
+          accelerator: isMac ? 'Cmd+Shift+I' : 'Ctrl+Shift+I',
+          click: () => mainWindow?.webContents.send('menu:open-exporter'),
         },
         { type: 'separator' as const },
         { role: 'togglefullscreen' as const },
@@ -154,11 +160,18 @@ function createWindow() {
     windowFg = isLightTheme ? '#1a1b1e' : '#ffffff';
   }
 
+  // Size to ~90% of the primary display's work area (adapts to big monitors),
+  // capped so it stays sane on very large screens.
+  const { workAreaSize } = screen.getPrimaryDisplay();
+  const winWidth = Math.min(2000, Math.round(workAreaSize.width * 0.9));
+  const winHeight = Math.min(1300, Math.round(workAreaSize.height * 0.9));
+
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 800,
-    minHeight: 600,
+    width: winWidth,
+    height: winHeight,
+    minWidth: 900,
+    minHeight: 640,
+    center: true,
     ...(!isWin ? { frame: false } : {}),
     ...(isMac ? { titleBarStyle: 'hiddenInset' as const } : {}),
     ...(isWin ? {
@@ -251,6 +264,27 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
 }
 
+// Single-instance lock — without it a second launch spawns a duplicate app
+// that fails to bind the companion port (:18088) and throws "A JavaScript error
+// occurred in the main process". Only the desktop app enforces this (the
+// headless backend may run intentionally alongside).
+if (!backendOnlyMode) {
+  const gotLock = app.requestSingleInstanceLock();
+  if (!gotLock) {
+    app.quit();
+  } else {
+    app.on('second-instance', () => {
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.show();
+        mainWindow.focus();
+      } else {
+        createWindow();
+      }
+    });
+  }
+}
+
 // Register custom protocol for serving local attachment files in the renderer.
 // Must be called before app.whenReady().
 protocol.registerSchemesAsPrivileged([
@@ -316,6 +350,7 @@ app.whenReady().then(async () => {
     registerThemeIpc(backendRuntime.themeService);
     registerEditorStoreIpc();
     registerDocsIpc();
+    registerChatExporterIpc(() => mainWindow);
   }
 
   // Window control IPC handlers

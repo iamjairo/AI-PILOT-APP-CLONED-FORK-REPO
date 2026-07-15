@@ -1,0 +1,25 @@
+{
+  "name": "ai-pilot-chat-exporter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone Chrome MV3 extension that exports AI chat conversations to Markdown / HTML / PDF / JSON / ZIP.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && node build.mjs",
+    "safari": "node -e \"if (process.platform !== 'darwin') { console.error('Safari conversion requires macOS + Xcode.'); process.exit(1); }\" && xcrun safari-web-extension-converter dist/ --app-name \"AI-Pilot Chat Exporter\" --bundle-identifier com.iamjairo.aipilot.chatexporter"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/turndown": "^5.0.6",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.6.3"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

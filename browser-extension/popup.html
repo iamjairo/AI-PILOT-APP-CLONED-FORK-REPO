@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Pilot Chat Exporter</title>
+    <style>
+      :root {
+        --bg: #131314;
+        --panel: #1e1f20;
+        --border: #303236;
+        --text: #e3e3e3;
+        --muted: #9aa0ac;
+        --accent: #10b981;
+        --accent-ink: #04120c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        width: 320px;
+        background: var(--bg);
+        color: var(--text);
+        font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { padding: 14px 16px 16px; }
+      header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      header .glyph {
+        width: 22px; height: 22px; border-radius: 6px; background: var(--accent);
+        color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px;
+      }
+      header h1 { font-size: 14px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+      .service-row {
+        display: flex; align-items: center; justify-content: space-between;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+        padding: 8px 12px; margin-bottom: 14px;
+      }
+      .service-row .label { color: var(--muted); font-size: 12px; }
+      .service-row .value { font-weight: 600; }
+      .service-row .value.unsupported { color: #f59e0b; }
+      fieldset { border: none; margin: 0 0 10px; padding: 0; }
+      label.field { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+        color: var(--muted); margin-bottom: 5px; }
+      select {
+        width: 100%; background: var(--panel); color: var(--text);
+        border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font: inherit;
+      }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .checks { display: grid; gap: 8px; margin: 12px 0 4px; }
+      .check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+      .check input { accent-color: var(--accent); width: 15px; height: 15px; }
+      .zip-only { margin-top: 6px; padding: 10px 12px; border: 1px dashed var(--border);
+        border-radius: 8px; transition: opacity .15s; }
+      .zip-only .zip-hint { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+        color: var(--muted); margin-bottom: 8px; }
+      .zip-only.disabled { opacity: .4; }
+      .zip-only.disabled input { cursor: not-allowed; }
+      button.export {
+        width: 100%; margin-top: 14px; padding: 11px 16px; border: none; border-radius: 9999px;
+        background: var(--accent); color: var(--accent-ink); font: 600 13px/1 system-ui, sans-serif;
+        cursor: pointer; letter-spacing: .02em;
+      }
+      button.export:disabled { opacity: .5; cursor: not-allowed; }
+      .status { margin-top: 12px; min-height: 16px; font-size: 12px; color: var(--muted); }
+      .status.error { color: #f87171; }
+      .status.done { color: var(--accent); }
+      .hint { margin-top: 10px; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+      footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center; }
+      footer a { color: var(--muted); font-size: 11.5px; text-decoration: none; cursor: pointer; }
+      footer a:hover { color: var(--text); text-decoration: underline; }
+      footer .brand { font-size: 11px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="glyph">⤓</div>
+        <h1>Chat Exporter</h1>
+      </header>
+
+      <div class="service-row">
+        <span class="label">Detected site</span>
+        <span class="value" id="service-value">Checking…</span>
+      </div>
+
+      <fieldset>
+        <label class="field" for="format">Format</label>
+        <select id="format">
+          <option value="markdown">Markdown (.md)</option>
+          <option value="html">HTML (.html)</option>
+          <option value="pdf">PDF (print)</option>
+          <option value="json">JSON (raw archive)</option>
+          <option value="zip">ZIP (doc + scripts + attachments)</option>
+        </select>
+      </fieldset>
+
+      <fieldset>
+        <label class="field" for="theme">Theme</label>
+        <select id="theme">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </fieldset>
+
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="includeCode" /> Include code blocks</label>
+        <label class="check"><input type="checkbox" id="syntaxColors" /> Syntax colors (One-Dark)</label>
+      </div>
+
+      <div class="zip-only" id="zip-only">
+        <div class="zip-hint">ZIP bundle only</div>
+        <label class="check"><input type="checkbox" id="downloadScripts" /> Include generated files / scripts</label>
+        <label class="check"><input type="checkbox" id="downloadAttachments" /> Include attachments</label>
+      </div>
+
+      <button class="export" id="export-btn">Export current chat</button>
+
+      <div class="status" id="status"></div>
+      <div class="hint" id="hint" hidden>
+        Open a conversation on ChatGPT, Claude, Gemini, DeepSeek, Le Chat (Mistral) or Qwen,
+        then reopen this popup.
+      </div>
+
+      <footer>
+        <span class="brand">AI-Pilot Chat Exporter</span>
+        <a id="options-link">Options</a>
+      </footer>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -25,6 +25,16 @@ mac:
   gatekeeperAssess: false
   entitlements: resources/entitlements.mac.plist
   entitlementsInherit: resources/entitlements.mac.plist
+  # Signing + notarization are env-driven — NO secrets live in this repo:
+  #   CSC_LINK               base64 of your "Developer ID Application" .p12
+  #   CSC_KEY_PASSWORD       password for that .p12
+  #   APPLE_ID               your Apple account email
+  #   APPLE_APP_SPECIFIC_PASSWORD   app-specific password (appleid.apple.com)
+  #   APPLE_TEAM_ID          your Apple Team ID
+  # With those present, electron-builder signs with the Developer ID cert and
+  # `notarize: true` submits to Apple's notary service via @electron/notarize.
+  # With them absent (local dev), it produces an unsigned/ad-hoc build.
+  notarize: true
   target:
     - target: dmg
       arch:

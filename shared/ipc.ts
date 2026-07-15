@@ -311,6 +311,21 @@ export const IPC = {
   // Menu-bar tray (main → renderer)
   TRAY_NEW_CONVERSATION: 'tray:new-conversation',
 
+  // Native menu (main → renderer)
+  MENU_OPEN_EDITOR: 'menu:open-editor',
+  MENU_OPEN_EXPORTER: 'menu:open-exporter',
+
+  // Chat Exporter (renderer → main invoke, + main → renderer push)
+  CHAT_SERVICES: 'chat:services',              // list services + connected state
+  CHAT_LOGIN: 'chat:login',                    // open login webview for a service
+  CHAT_LIST_REMOTE: 'chat:list-remote',        // list conversations on a service
+  CHAT_IMPORT: 'chat:import',                  // import selected -> Postgres archive
+  CHAT_CAPTURE_PROGRESS: 'chat:capture-progress', // main → renderer push
+  // Chat archive (Postgres-backed, read from e-Editor + exporter)
+  CHAT_ARCHIVE_LIST: 'chat:archive-list',
+  CHAT_ARCHIVE_GET: 'chat:archive-get',
+  CHAT_ARCHIVE_DELETE: 'chat:archive-delete',
+
   // Web Tab (agent → renderer)
   WEB_TAB_OPEN: 'web-tab:open',              // main → renderer
   WEB_TAB_LOAD_FAILED: 'web-tab:load-failed', // main → renderer

@@ -203,6 +203,14 @@ function App() {
     return unsub;
   }, []);
 
+  // Native View menu → Chat Exporter tab
+  useEffect(() => {
+    const unsub = on('menu:open-exporter', () => {
+      useTabStore.getState().addExporterTab();
+    });
+    return unsub;
+  }, []);
+
   useEffect(() => {
     const unsub = on('menu:close-tab', () => {
       const { activeTabId, closeTab } = useTabStore.getState();

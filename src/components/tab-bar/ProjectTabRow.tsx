@@ -12,6 +12,7 @@ const TAB_ICON: Record<TabState['type'], keyof typeof icons> = {
   web: 'Globe',
   desktop: 'Monitor',
   editor: 'Code2',
+  exporter: 'Download',
 };
 
 interface ProjectTabRowProps {

@@ -1,0 +1,11 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Emerald download glyph on a transparent background -->
+  <g stroke="#10b981" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- vertical shaft -->
+    <path d="M64 24 V78" />
+    <!-- arrow head -->
+    <path d="M40 58 L64 82 L88 58" />
+    <!-- download tray -->
+    <path d="M30 100 H98" />
+  </g>
+</svg>

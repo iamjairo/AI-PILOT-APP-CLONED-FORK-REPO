@@ -4,6 +4,9 @@ import { IPC } from '../../shared/ipc';
 import type {
   EditorStoreRecord,
   EditorStoreStatus,
+  ArchivedChat,
+  ArchivedChatSummary,
+  ChatMessage,
 } from '../../shared/types';
 import { broadcastToRenderer } from '../utils/broadcast';
 import { getLogger } from './logger';
@@ -53,6 +56,18 @@ interface StoreRow {
   key: string;
   value: unknown;
   updated_at: string | number;
+}
+
+interface ChatRow {
+  id: string;
+  service: string;
+  title: string;
+  model: string | null;
+  source_url?: string | null;
+  message_count: number;
+  messages?: ChatMessage[];
+  created_at: number | null;
+  imported_at: number;
 }
 
 function rowToRecord(row: StoreRow): EditorStoreRecord {
@@ -118,6 +133,26 @@ class EditorStoreService {
            updated_at bigint NOT NULL,
            device text
          )`,
+      );
+
+      // Chat archive — imported AI conversations live in Postgres (never in app
+      // session state), read/edited from the e-Editor. `messages` is the full
+      // normalized conversation; light columns are indexed for the list view.
+      await this.pool.query(
+        `CREATE TABLE IF NOT EXISTS chat_archive (
+           id text PRIMARY KEY,
+           service text NOT NULL,
+           title text NOT NULL,
+           model text,
+           source_url text,
+           message_count int NOT NULL DEFAULT 0,
+           messages jsonb NOT NULL,
+           created_at bigint,
+           imported_at bigint NOT NULL
+         )`,
+      );
+      await this.pool.query(
+        `CREATE INDEX IF NOT EXISTS chat_archive_service_idx ON chat_archive (service, imported_at DESC)`,
       );
 
       this.setStatus({ connected: true, backend: 'postgres' });
@@ -206,6 +241,81 @@ class EditorStoreService {
       await this.pool.query('SELECT pg_notify($1, $2)', [NOTIFY_CHANNEL, key]);
     } catch (err) {
       log.error('delete() failed', { key, err: String(err) });
+    }
+  }
+
+  // ── Chat archive ────────────────────────────────────────────────────
+  // Imported conversations. Returns false/[] gracefully when Postgres is
+  // unconfigured (the capture layer can then hold them locally / warn).
+
+  async archiveChat(rec: ArchivedChat): Promise<boolean> {
+    if (!this.pool) return false;
+    try {
+      await this.pool.query(
+        `INSERT INTO chat_archive (id, service, title, model, source_url, message_count, messages, created_at, imported_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title, model = EXCLUDED.model, source_url = EXCLUDED.source_url,
+           message_count = EXCLUDED.message_count, messages = EXCLUDED.messages,
+           created_at = EXCLUDED.created_at, imported_at = EXCLUDED.imported_at`,
+        [rec.id, rec.service, rec.title, rec.model ?? null, rec.sourceUrl ?? null,
+         rec.messages.length, JSON.stringify(rec.messages), rec.createdAt ?? null, rec.importedAt],
+      );
+      await this.pool.query('SELECT pg_notify($1, $2)', [NOTIFY_CHANNEL, 'chat_archive']);
+      return true;
+    } catch (err) {
+      log.error('archiveChat() failed', { id: rec.id, err: String(err) });
+      return false;
+    }
+  }
+
+  /** Lightweight list (no message bodies) for the library view. */
+  async listChats(service?: string): Promise<ArchivedChatSummary[]> {
+    if (!this.pool) return [];
+    try {
+      const res = service
+        ? await this.pool.query<ChatRow>(
+            `SELECT id, service, title, model, message_count, created_at, imported_at
+             FROM chat_archive WHERE service = $1 ORDER BY imported_at DESC`, [service])
+        : await this.pool.query<ChatRow>(
+            `SELECT id, service, title, model, message_count, created_at, imported_at
+             FROM chat_archive ORDER BY imported_at DESC`);
+      return res.rows.map((r) => ({
+        id: r.id, service: r.service, title: r.title, model: r.model,
+        messageCount: r.message_count, createdAt: r.created_at, importedAt: r.imported_at,
+      }));
+    } catch (err) {
+      log.error('listChats() failed', { err: String(err) });
+      return [];
+    }
+  }
+
+  /** Full conversation including message bodies. */
+  async getChat(id: string): Promise<ArchivedChat | null> {
+    if (!this.pool) return null;
+    try {
+      const res = await this.pool.query<ChatRow>(
+        `SELECT id, service, title, model, source_url, message_count, messages, created_at, imported_at
+         FROM chat_archive WHERE id = $1`, [id]);
+      const r = res.rows[0];
+      if (!r) return null;
+      return {
+        id: r.id, service: r.service as ArchivedChat['service'], title: r.title, model: r.model, sourceUrl: r.source_url,
+        messages: r.messages ?? [], createdAt: r.created_at, importedAt: r.imported_at,
+      };
+    } catch (err) {
+      log.error('getChat() failed', { id, err: String(err) });
+      return null;
+    }
+  }
+
+  async deleteChat(id: string): Promise<void> {
+    if (!this.pool) return;
+    try {
+      await this.pool.query('DELETE FROM chat_archive WHERE id = $1', [id]);
+      await this.pool.query('SELECT pg_notify($1, $2)', [NOTIFY_CHANNEL, 'chat_archive']);
+    } catch (err) {
+      log.error('deleteChat() failed', { id, err: String(err) });
     }
   }
 

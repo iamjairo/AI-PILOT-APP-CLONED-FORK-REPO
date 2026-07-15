@@ -10,6 +10,7 @@ import { DocsViewer } from '../docs/DocsViewer';
 import { WebView } from '../web/WebView';
 import DesktopTabView from '../desktop/DesktopTabView';
 import { EEditor } from '../editor/EEditor';
+import { ChatExporter } from '../exporter/ChatExporter';
 import ArtifactPanel from '../artifacts/ArtifactPanel';
 
 export default function MainLayout() {
@@ -40,10 +41,16 @@ export default function MainLayout() {
         return <DesktopTabView />;
       case 'editor':
         return <EEditor />;
+      case 'exporter':
+        return <ChatExporter />;
       default:
         return <ChatView />;
     }
   };
+
+  // The e-Editor and Chat Exporter are self-contained full-width surfaces —
+  // the project context panel (Files/Git/Changes/…) only crowds them.
+  const fullWidthTab = activeTab?.type === 'editor' || activeTab?.type === 'exporter';
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -52,11 +59,11 @@ export default function MainLayout() {
         <ResizeHandle side="right" onResize={handleSidebarResize} />
       )}
       {renderMainContent()}
-      <ArtifactPanel />
-      {contextPanelVisible && (
+      {!fullWidthTab && <ArtifactPanel />}
+      {!fullWidthTab && contextPanelVisible && (
         <ResizeHandle side="left" onResize={handleContextPanelResize} />
       )}
-      <ContextPanel />
+      {!fullWidthTab && <ContextPanel />}
     </div>
   );
 }

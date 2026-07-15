@@ -903,6 +903,78 @@ export interface EditorStoreChange {
   updatedAt: number;
 }
 
+// ── Chat Exporter / archive ───────────────────────────────────────────
+export type ChatService = 'chatgpt' | 'claude' | 'gemini' | 'deepseek' | 'lechat' | 'qwen';
+
+export interface ChatServiceInfo {
+  id: ChatService;
+  name: string;
+  host: string;
+  /** true once a logged-in session for this service has been captured. */
+  connected?: boolean;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  /** Sanitized HTML body (code blocks, math markers preserved). */
+  html?: string;
+  /** Plain-text / markdown-ish fallback. */
+  text?: string;
+  /** Extracted fenced code blocks, for "download scripts". */
+  codeBlocks?: { lang?: string; code: string }[];
+  /** Attachment references (name + data URL or remote URL). */
+  attachments?: { name: string; url: string; mime?: string }[];
+  createdAt?: number;
+}
+
+/** A conversation the exporter found on a service (list item, before import). */
+export interface RemoteChatSummary {
+  id: string;
+  title: string;
+  updatedAt?: number;
+}
+
+/** Full imported conversation (stored in Postgres chat_archive). */
+export interface ArchivedChat {
+  id: string;
+  service: ChatService;
+  title: string;
+  model?: string | null;
+  sourceUrl?: string | null;
+  messages: ChatMessage[];
+  createdAt?: number | null;
+  importedAt: number;
+}
+
+/** Lightweight list row (no message bodies) for the library view. */
+export interface ArchivedChatSummary {
+  id: string;
+  service: string;
+  title: string;
+  model: string | null;
+  messageCount: number;
+  createdAt: number | null;
+  importedAt: number;
+}
+
+/** Export options (ported from the extension's export settings). */
+export interface ChatExportOptions {
+  format: 'markdown' | 'pdf' | 'html';
+  includeCode: boolean;
+  syntaxColors: boolean;
+  downloadScripts: boolean;
+  downloadAttachments: boolean;
+  theme: 'dark' | 'light';
+}
+
+export interface ChatCaptureProgress {
+  service: ChatService;
+  phase: 'login' | 'listing' | 'importing' | 'done' | 'error';
+  message?: string;
+  current?: number;
+  total?: number;
+}
+
 // ── Docs/Reader: fetch + clean-extract ────────────────────────────────
 export interface DocsFetchResult {
   ok: boolean;

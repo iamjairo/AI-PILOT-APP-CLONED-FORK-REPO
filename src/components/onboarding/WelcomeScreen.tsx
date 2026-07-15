@@ -59,7 +59,7 @@ export default function WelcomeScreen() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex flex-col items-center gap-3 mb-1">
-            <img src={appIcon} alt="AI-Pilot" className="w-16 h-16" draggable={false} />
+            <img src={appIcon} alt="AI-Pilot" className="w-28 h-28" draggable={false} />
             <h1 className="text-2xl font-bold text-text-primary">Welcome to AI-Pilot</h1>
           </div>
           <p className="text-sm text-text-secondary">

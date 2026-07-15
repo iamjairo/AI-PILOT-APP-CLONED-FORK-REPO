@@ -10,7 +10,7 @@ import { useArtifactStore } from './artifact-store';
  */
 export interface TabState {
   id: string;
-  type: 'chat' | 'file' | 'tasks' | 'docs' | 'web' | 'desktop' | 'editor';
+  type: 'chat' | 'file' | 'tasks' | 'docs' | 'web' | 'desktop' | 'editor' | 'exporter';
   filePath: string | null; // for file tabs; URL for web tabs
   title: string;
   projectPath: string | null;
@@ -54,6 +54,7 @@ interface TabStore {
   addWebTab: (url: string, projectPath: string | null, title?: string, background?: boolean) => string;
   addDesktopTab: (projectPath: string) => string;
   addEditorTab: () => string;
+  addExporterTab: () => string;
   closeTab: (tabId: string) => void;
   switchTab: (tabId: string) => void;
   switchToTabByIndex: (index: number) => void;
@@ -335,6 +336,35 @@ export const useTabStore = create<TabStore>((set, get) => {
         activeTabId: newTabId,
       }));
 
+      return newTabId;
+    },
+
+    addExporterTab: () => {
+      const existing = get().tabs.find((t) => t.type === 'exporter');
+      if (existing) {
+        get().switchTab(existing.id);
+        return existing.id;
+      }
+      const newTabId = crypto.randomUUID();
+      const tabs = get().tabs;
+      const maxOrder = tabs.length > 0 ? Math.max(...tabs.map((t) => t.order)) : -1;
+      const newTab: TabState = {
+        id: newTabId,
+        type: 'exporter',
+        filePath: null,
+        title: 'Chat Exporter',
+        projectPath: null,
+        sessionPath: null,
+        projectColor: '',
+        isPinned: false,
+        order: maxOrder + 1,
+        scrollPosition: 0,
+        inputDraft: '',
+        panelConfig: { sidebarVisible: true, contextPanelVisible: false, contextPanelTab: 'files' },
+        lastActiveAt: Date.now(),
+        hasUnread: false,
+      };
+      set((state) => ({ tabs: [...state.tabs, newTab], activeTabId: newTabId }));
       return newTabId;
     },
 

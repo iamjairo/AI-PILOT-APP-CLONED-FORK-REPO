@@ -1,29 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
-  <!-- Menu-bar tray icon — variant A: rounded dark badge with the AI-Pilot
-       robot in its original colors. The badge supplies contrast on light AND
-       dark menu bars and gives the rounded edges. -->
-  <rect width="36" height="36" rx="9" fill="#2f3040"/>
-  <g transform="translate(8.2,3) scale(0.0462) translate(-236,-140)">
-    <rect x="438" y="180" width="20" height="70" rx="10" fill="#5f6379"/>
-    <ellipse cx="448" cy="172" rx="22" ry="26" fill="#5f6379"/>
-    <circle cx="306" cy="330" r="34" fill="#5f6379"/>
-    <circle cx="590" cy="330" r="34" fill="#5f6379"/>
-    <rect x="318" y="248" width="260" height="164" rx="36" fill="#ece9f7"/>
-    <rect x="346" y="278" width="204" height="104" rx="20" fill="#8fc9f0"/>
-    <circle cx="408" cy="330" r="24" fill="#2f3040"/>
-    <circle cx="488" cy="330" r="24" fill="#2f3040"/>
-    <circle cx="416" cy="322" r="8" fill="#ffffff"/>
-    <circle cx="496" cy="322" r="8" fill="#ffffff"/>
-    <rect x="408" y="412" width="80" height="42" rx="12" fill="#1f2130"/>
-    <path d="M330 500 C 250 520 240 600 260 660 C 268 682 300 682 306 658 C 296 610 306 560 350 546 Z" fill="#8a8fa5"/>
-    <path d="M566 500 C 646 520 656 600 636 660 C 628 682 596 682 590 658 C 600 610 590 560 546 546 Z" fill="#8a8fa5"/>
-    <circle cx="283" cy="676" r="30" fill="#4d9df5"/>
-    <circle cx="613" cy="676" r="30" fill="#4d9df5"/>
-    <rect x="330" y="452" width="236" height="216" rx="40" fill="#ece9f7"/>
-    <rect x="368" y="496" width="160" height="18" rx="9" fill="#cfcbe6"/>
-    <rect x="368" y="536" width="160" height="18" rx="9" fill="#cfcbe6"/>
-    <rect x="368" y="576" width="160" height="18" rx="9" fill="#cfcbe6"/>
-    <path d="M366 668 A 82 78 0 0 0 530 668 Z" fill="#9fcdf3"/>
-    <ellipse cx="448" cy="756" rx="26" ry="30" fill="#8a8fa5"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="236 150 428 620">
+  <!-- Menu-bar tray icon — DARK robot (body deepened to slate so it reads on a
+       light menu bar). Robot only, no badge/bubble, transparent. -->
+  <rect x="438" y="180" width="20" height="70" rx="10" fill="#3a3d52"/>
+  <ellipse cx="448" cy="172" rx="22" ry="26" fill="#3a3d52"/>
+  <circle cx="306" cy="330" r="34" fill="#3a3d52"/>
+  <circle cx="590" cy="330" r="34" fill="#3a3d52"/>
+  <rect x="318" y="248" width="260" height="164" rx="36" fill="#4a4e66"/>
+  <rect x="346" y="278" width="204" height="104" rx="20" fill="#7cb8e6"/>
+  <circle cx="408" cy="330" r="24" fill="#1c1e2a"/>
+  <circle cx="488" cy="330" r="24" fill="#1c1e2a"/>
+  <circle cx="416" cy="322" r="8" fill="#ffffff"/>
+  <circle cx="496" cy="322" r="8" fill="#ffffff"/>
+  <rect x="408" y="412" width="80" height="42" rx="12" fill="#1c1e2a"/>
+  <path d="M330 500 C 250 520 240 600 260 660 C 268 682 300 682 306 658 C 296 610 306 560 350 546 Z" fill="#3a3d52"/>
+  <path d="M566 500 C 646 520 656 600 636 660 C 628 682 596 682 590 658 C 600 610 590 560 546 546 Z" fill="#3a3d52"/>
+  <circle cx="283" cy="676" r="30" fill="#4d9df5"/>
+  <circle cx="613" cy="676" r="30" fill="#4d9df5"/>
+  <rect x="330" y="452" width="236" height="216" rx="40" fill="#4a4e66"/>
+  <rect x="368" y="496" width="160" height="18" rx="9" fill="#6b7089"/>
+  <rect x="368" y="536" width="160" height="18" rx="9" fill="#6b7089"/>
+  <rect x="368" y="576" width="160" height="18" rx="9" fill="#6b7089"/>
+  <path d="M366 668 A 82 78 0 0 0 530 668 Z" fill="#5a7fa0"/>
+  <ellipse cx="448" cy="756" rx="26" ry="30" fill="#3a3d52"/>
 </svg>

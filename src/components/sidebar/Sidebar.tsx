@@ -8,7 +8,6 @@ import { useTabStore } from '../../stores/tab-store';
 import { isCompanionMode } from '../../lib/ipc-client';
 import { Icon } from '../shared/Icon';
 import { Tooltip } from '../shared/Tooltip';
-import { EEditorIcon } from '../editor/EEditorIcon';
 import { SessionList } from './SessionList';
 import { SidebarMemoryPane } from './SidebarMemoryPane';
 import { SidebarTasksPane } from './SidebarTasksPane';
@@ -69,7 +68,26 @@ export default function Sidebar() {
   };
 
   const activeTabId = useTabStore((s) => s.activeTabId);
+  const activeTabType = useTabStore((s) => s.tabs.find((t) => t.id === s.activeTabId)?.type);
   const closeTab = useTabStore((s) => s.closeTab);
+  // When a full-width tab (e-Editor / Exporter) is active, THAT icon is the one
+  // in use — no sidebar pane (sessions/memory/tasks) should also show highlighted.
+  const inFullTab = activeTabType === 'editor' || activeTabType === 'exporter';
+  const tabs = useTabStore((s) => s.tabs);
+  const switchTab = useTabStore((s) => s.switchTab);
+
+  // Clicking a pane (Sessions/Memory/Tasks) should LEAVE a full-width tab, so the
+  // pane becomes the active view and the editor/exporter icon un-highlights —
+  // exactly one sidebar icon is ever lit.
+  const goToPane = (pane: SidebarPane) => {
+    if (!sidebarVisible) toggleSidebar();
+    if (inFullTab) {
+      const chat = tabs.find((t) => t.type === 'chat');
+      if (chat) switchTab(chat.id);
+      else addTab();
+    }
+    handlePaneClick(pane);
+  };
 
   return (
     <div className="flex flex-row flex-shrink-0">
@@ -145,16 +163,13 @@ export default function Sidebar() {
         <Tooltip content="Sessions" position="right">
           <button
             className={`p-2 rounded-md transition-colors ${
-              sidebarVisible && sidebarPane === 'sessions'
+              sidebarVisible && sidebarPane === 'sessions' && !inFullTab
                 ? 'bg-accent/15 text-accent'
                 : 'hover:bg-bg-elevated text-text-secondary'
             }`}
-            onClick={() => {
-              if (!sidebarVisible) toggleSidebar();
-              handlePaneClick('sessions');
-            }}
+            onClick={() => goToPane('sessions')}
           >
-            <Icon name="MessageSquare" className="w-4 h-4" />
+            <Icon name="MessageSquare" className="w-4 h-4 text-sky-400" />
           </button>
         </Tooltip>
 
@@ -162,16 +177,13 @@ export default function Sidebar() {
         <Tooltip content="Memory" position="right">
           <button
             className={`p-2 rounded-md transition-colors ${
-              sidebarVisible && sidebarPane === 'memory'
+              sidebarVisible && sidebarPane === 'memory' && !inFullTab
                 ? 'bg-accent/15 text-accent'
                 : 'hover:bg-bg-elevated text-text-secondary'
             }`}
-            onClick={() => {
-              if (!sidebarVisible) toggleSidebar();
-              handlePaneClick('memory');
-            }}
+            onClick={() => goToPane('memory')}
           >
-            <Icon name="Brain" className="w-4 h-4" />
+            <Icon name="Brain" className="w-4 h-4 text-purple-400" />
           </button>
         </Tooltip>
 
@@ -179,27 +191,39 @@ export default function Sidebar() {
         <Tooltip content="Tasks" position="right">
           <button
             className={`p-2 rounded-md transition-colors ${
-              sidebarVisible && sidebarPane === 'tasks'
+              sidebarVisible && sidebarPane === 'tasks' && !inFullTab
                 ? 'bg-accent/15 text-accent'
                 : 'hover:bg-bg-elevated text-text-secondary'
             }`}
-            onClick={() => {
-              if (!sidebarVisible) toggleSidebar();
-              handlePaneClick('tasks');
-            }}
+            onClick={() => goToPane('tasks')}
           >
-            <Icon name="ListTodo" className="w-4 h-4" />
+            <Icon name="ListTodo" className="w-4 h-4 text-amber-400" />
           </button>
         </Tooltip>
 
         {/* e-Editor tab */}
         <Tooltip content="e-Editor" position="right">
           <button
-            className="p-2 rounded-md transition-colors hover:bg-bg-elevated text-text-secondary"
+            className={`p-2 rounded-md transition-colors ${
+              activeTabType === 'editor' ? 'bg-accent/15 ring-1 ring-accent/40' : 'hover:bg-bg-elevated'
+            }`}
             onClick={() => useTabStore.getState().addEditorTab()}
             aria-label="e-Editor"
           >
-            <EEditorIcon size={16} />
+            <Icon name="Code2" className="w-4 h-4 text-teal-400" />
+          </button>
+        </Tooltip>
+
+        {/* Chat Exporter tab */}
+        <Tooltip content="Chat Exporter" position="right">
+          <button
+            className={`p-2 rounded-md transition-colors ${
+              activeTabType === 'exporter' ? 'bg-accent/15 ring-1 ring-accent/40' : 'hover:bg-bg-elevated'
+            }`}
+            onClick={() => useTabStore.getState().addExporterTab()}
+            aria-label="Chat Exporter"
+          >
+            <Icon name="Download" className="w-4 h-4 text-emerald-400" />
           </button>
         </Tooltip>
 
