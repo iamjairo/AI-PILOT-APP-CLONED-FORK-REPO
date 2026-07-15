@@ -15,6 +15,13 @@ export interface ProviderAuthInfo {
   authType: 'api_key' | 'oauth' | 'env' | 'none';
 }
 
+/** Device-code OAuth details (e.g. GitHub Copilot) pushed from main process */
+export interface OAuthDeviceCodeInfo {
+  userCode: string;
+  verificationUri: string;
+  expiresInSeconds?: number;
+}
+
 /** Ollama status pushed from main process */
 export interface OllamaStatusInfo {
   available: boolean;
@@ -37,6 +44,7 @@ interface AuthStore {
   oauthInProgress: string | null; // provider id
   oauthMessage: string | null;
   oauthPrompt: string | null; // non-null when waiting for user to paste a code
+  oauthDeviceCode: OAuthDeviceCodeInfo | null; // non-null during a device-code flow
 
   // Actions
   loadStatus: () => Promise<void>;
@@ -87,6 +95,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   oauthInProgress: null,
   oauthMessage: null,
   oauthPrompt: null,
+  oauthDeviceCode: null,
   ollamaStatus: null,
 
   loadStatus: async () => {
@@ -119,16 +128,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   loginOAuth: async (providerId: string) => {
-    set({ oauthInProgress: providerId, oauthMessage: 'Starting login…', oauthPrompt: null, error: null });
+    set({ oauthInProgress: providerId, oauthMessage: 'Starting login…', oauthPrompt: null, oauthDeviceCode: null, error: null });
     try {
       await invoke(IPC.AUTH_LOGIN_OAUTH, providerId);
-      set({ oauthInProgress: null, oauthMessage: null, oauthPrompt: null });
+      set({ oauthInProgress: null, oauthMessage: null, oauthPrompt: null, oauthDeviceCode: null });
       await get().loadStatus();
     } catch (error) {
       set({
         oauthInProgress: null,
         oauthMessage: null,
         oauthPrompt: null,
+        oauthDeviceCode: null,
         error: friendlyAuthError(error),
       });
     }

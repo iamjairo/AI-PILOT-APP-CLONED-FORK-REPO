@@ -1,12 +1,17 @@
-import { useAuthStore } from '../../../stores/auth-store';
+import { useAuthStore, type ProviderAuthInfo } from '../../../stores/auth-store';
 import { useEffect, useState } from 'react';
 import {
   Eye, EyeOff, LogOut, ChevronDown, RefreshCw, Loader2, Wifi,
-  Link, KeyRound, Plus, X, Cloud, Server,
+  Link, KeyRound, Plus, X, Cloud, ExternalLink, AlertCircle,
 } from 'lucide-react';
 import { IPC } from '../../../../shared/ipc';
 import { invoke } from '../../../lib/ipc-client';
 import type { OllamaCloudModel } from '../../../../shared/types';
+import {
+  FEATURED_PROVIDERS, ADDITIONAL_PROVIDERS, getProviderDef, fallbackProviderDef,
+  type ProviderDef,
+} from '../../../lib/providers';
+import { OAuthFlowPanels } from '../../shared/OAuthFlowPanels';
 
 interface AvailableModel {
   provider: string;
@@ -15,7 +20,10 @@ interface AvailableModel {
 }
 
 export function AuthSettings() {
-  const { providers, ollamaStatus, loadStatus, setApiKey, logout } = useAuthStore();
+  const { providers, ollamaStatus, loadStatus, setApiKey, logout, loginOAuth, oauthInProgress, error, clearError } = useAuthStore();
+  // Non-featured providers picked from the "add another provider" dropdown
+  // this session (shown even before a key is saved).
+  const [addedProviderIds, setAddedProviderIds] = useState<string[]>([]);
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
   const [piSettings, setPiSettings] = useState<Record<string, unknown>>({});
   const [apiKeyInputs, setApiKeyInputs] = useState<Record<string, string>>({});
@@ -79,6 +87,11 @@ export function AuthSettings() {
 
   const handleLogout = async (provider: string) => {
     await logout(provider);
+    await refreshModelList();
+  };
+
+  const handleLoginOAuth = async (provider: string) => {
+    await loginOAuth(provider);
     await refreshModelList();
   };
 
@@ -182,12 +195,20 @@ export function AuthSettings() {
   const currentDefault = piSettings.defaultModel as string | undefined;
   const currentDefaultProvider = piSettings.defaultProvider as string | undefined;
 
-  const PROVIDER_LABELS: Record<string, string> = {
-    anthropic: 'Anthropic',
-    openai: 'OpenAI',
-    google: 'Google',
-    ollama: 'Ollama',
-  };
+  // ─── Cloud provider cards (shared definitions with onboarding) ──
+  const featuredCloud = FEATURED_PROVIDERS.filter(d => !d.isOllama);
+  const featuredIds = new Set(FEATURED_PROVIDERS.map(d => d.id));
+  // Any stored/connected provider outside the featured set (e.g. google,
+  // openrouter) — AUTH_GET_STATUS returns every stored provider.
+  const connectedExtras: ProviderDef[] = providers
+    .filter(p => p.hasAuth && p.provider !== 'ollama' && !featuredIds.has(p.provider))
+    .map(p => getProviderDef(p.provider) ?? fallbackProviderDef(p.provider));
+  const addedExtras: ProviderDef[] = addedProviderIds
+    .filter(id => !connectedExtras.some(d => d.id === id))
+    .map(id => getProviderDef(id) ?? fallbackProviderDef(id));
+  const cloudProviderDefs: ProviderDef[] = [...featuredCloud, ...connectedExtras, ...addedExtras];
+  const shownIds = new Set(cloudProviderDefs.map(d => d.id));
+  const dropdownOptions = ADDITIONAL_PROVIDERS.filter(d => !shownIds.has(d.id));
 
   return (
     <div className="p-5 space-y-6">
@@ -404,9 +425,25 @@ export function AuthSettings() {
       </div>
 
       {/* ─── Cloud providers ───────────────────────────────────────── */}
-      {providers.filter(p => p.provider !== 'ollama').map((p) => {
-        const label = PROVIDER_LABELS[p.provider] || p.provider;
+      {error && (
+        <div className="flex items-start gap-2 p-3 bg-error/10 border border-error/20 rounded-lg">
+          <AlertCircle className="w-4 h-4 text-error mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-error break-words flex-1">{error}</p>
+          <button onClick={clearError} className="text-xs text-error/70 hover:text-error">✕</button>
+        </div>
+      )}
+
+      <OAuthFlowPanels />
+
+      {cloudProviderDefs.map((def) => {
+        const p: ProviderAuthInfo = providers.find(x => x.provider === def.id)
+          ?? { provider: def.id, hasAuth: false, authType: 'none' };
+        const label = def.name;
         const models = (availableModels as AvailableModel[]).filter(m => m.provider === p.provider);
+        // OAuth-only providers (no API key entry), e.g. openai-codex
+        const oauthOnly = def.supportsOAuth && def.envVar === '';
+        const showKeyInput = (!p.hasAuth || p.authType === 'api_key') && !oauthOnly;
+        const showModels = p.hasAuth && models.length > 0;
 
         return (
           <div key={p.provider} className="bg-bg-surface rounded-lg border border-border overflow-hidden">
@@ -417,22 +454,37 @@ export function AuthSettings() {
                 <span className="text-[11px] text-text-secondary">
                   {p.hasAuth
                     ? p.authType === 'env' ? '(env var)' : p.authType === 'oauth' ? '(OAuth)' : '(API key)'
-                    : 'Not configured'}
+                    : def.description}
                 </span>
               </div>
-              {p.hasAuth && p.authType !== 'env' && (
-                <button
-                  onClick={() => handleLogout(p.provider)}
-                  className="flex items-center gap-1 text-xs text-text-secondary hover:text-error transition-colors"
-                >
-                  <LogOut className="w-3 h-3" />
-                  Remove
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {!p.hasAuth && def.supportsOAuth && (
+                  <button
+                    onClick={() => handleLoginOAuth(def.id)}
+                    disabled={oauthInProgress !== null}
+                    className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium text-white bg-accent hover:bg-accent/90 rounded transition-colors disabled:opacity-50"
+                  >
+                    {oauthInProgress === def.id
+                      ? <Loader2 className="w-3 h-3 animate-spin" />
+                      : <ExternalLink className="w-3 h-3" />}
+                    Login
+                  </button>
+                )}
+                {p.hasAuth && p.authType !== 'env' && (
+                  <button
+                    onClick={() => handleLogout(p.provider)}
+                    className="flex items-center gap-1 text-xs text-text-secondary hover:text-error transition-colors"
+                  >
+                    <LogOut className="w-3 h-3" />
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
 
+            {(showKeyInput || showModels) && (
             <div className="px-4 py-3 space-y-3">
-              {!p.hasAuth || p.authType === 'api_key' ? (
+              {showKeyInput ? (
                 <div>
                   <label className="text-xs text-text-secondary mb-1 block">
                     {p.hasAuth ? 'Update API Key' : 'API Key'}
@@ -444,7 +496,7 @@ export function AuthSettings() {
                         value={apiKeyInputs[p.provider] || ''}
                         onChange={(e) => setApiKeyInputs(s => ({ ...s, [p.provider]: e.target.value }))}
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveKey(p.provider)}
-                        placeholder={p.hasAuth ? '••••••••' : `Enter ${label} API key`}
+                        placeholder={p.hasAuth ? '••••••••' : (def.envVar || `Enter ${label} API key`)}
                         className="w-full text-xs font-mono bg-bg-base border border-border rounded px-2 py-1.5 pr-8 text-text-primary focus:outline-none focus:border-accent"
                       />
                       <button
@@ -467,7 +519,7 @@ export function AuthSettings() {
                 </div>
               ) : null}
 
-              {p.hasAuth && models.length > 0 && (
+              {showModels && (
                 <div>
                   <label className="text-xs text-text-secondary mb-1 block">Default Model</label>
                   <div className="relative">
@@ -500,12 +552,30 @@ export function AuthSettings() {
                 </div>
               )}
             </div>
+            )}
           </div>
         );
       })}
 
-      {providers.length === 0 && (
-        <p className="text-sm text-text-secondary text-center py-8">Loading providers…</p>
+      {/* ─── Add another provider ──────────────────────────────────── */}
+      {dropdownOptions.length > 0 && (
+        <div className="relative">
+          <Plus className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
+          <select
+            value=""
+            onChange={(e) => {
+              const id = e.target.value;
+              if (id) setAddedProviderIds(ids => ids.includes(id) ? ids : [...ids, id]);
+            }}
+            className="w-full text-xs bg-bg-surface border border-border rounded-lg pl-8 pr-8 py-2.5 text-text-secondary focus:outline-none focus:border-accent appearance-none cursor-pointer hover:border-accent/50 transition-colors"
+          >
+            <option value="">Add another provider…</option>
+            {dropdownOptions.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
+        </div>
       )}
     </div>
   );
